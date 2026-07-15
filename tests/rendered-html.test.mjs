@@ -21,13 +21,17 @@ test("server-renders the city transaction knowledge base", async () => {
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>全国与城市二手房交易知识库｜北京·深圳·广州<\/title>/i);
+  assert.match(html, /<title>全国与城市二手房交易知识库｜全国通则 \+ 12 城<\/title>/i);
   assert.match(html, /全国通则/);
-  assert.match(html, /三个城市政策包/);
+  assert.match(html, /十二个城市政策包/);
   assert.match(html, /北京/);
   assert.match(html, /深圳/);
   assert.match(html, /广州/);
-  assert.match(html, /2026\.07\.15-r2/);
+  assert.match(html, /上海/);
+  assert.match(html, /重庆/);
+  assert.match(html, /西安/);
+  assert.match(html, /南京/);
+  assert.match(html, /2026\.07\.15-r3/);
   assert.match(html, /签合同不等于已经取得房屋产权/);
   assert.match(html, /15% 是全国底线/);
   assert.match(html, /搜索城市、资格、税率、首付或规则 ID/);

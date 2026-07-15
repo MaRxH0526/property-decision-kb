@@ -786,6 +786,42 @@ mark {
   background: #536a9f;
 }
 
+.city-dot-shanghai {
+  background: #9a514d;
+}
+
+.city-dot-tianjin {
+  background: #4d7180;
+}
+
+.city-dot-wuhan {
+  background: #506b8a;
+}
+
+.city-dot-hangzhou {
+  background: #4f806d;
+}
+
+.city-dot-suzhou {
+  background: #70834d;
+}
+
+.city-dot-chengdu {
+  background: #9a7047;
+}
+
+.city-dot-chongqing {
+  background: #8b584c;
+}
+
+.city-dot-xian {
+  background: #8b6748;
+}
+
+.city-dot-nanjing {
+  background: #6d5e8b;
+}
+
 .city-dot-common {
   background: #696963;
 }

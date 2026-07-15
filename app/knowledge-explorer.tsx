@@ -13,10 +13,19 @@ import {
 type FilterKey = CityKey | "all";
 
 const filterItems: { key: FilterKey; label: string; caption: string }[] = [
-  { key: "all", label: "总览", caption: "全国通则 + 三城市" },
+  { key: "all", label: "总览", caption: "全国通则 + 12 城市" },
   { key: "beijing", label: "北京", caption: "五环内外" },
   { key: "shenzhen", label: "深圳", caption: "分区资格" },
   { key: "guangzhou", label: "广州", caption: "取消限购" },
+  { key: "shanghai", label: "上海", caption: "外环 + 房产税" },
+  { key: "tianjin", label: "天津", caption: "贷款按区" },
+  { key: "wuhan", label: "武汉", caption: "公积金三价取低" },
+  { key: "hangzhou", label: "杭州", caption: "积分场景消歧" },
+  { key: "suzhou", label: "苏州", caption: "限时公积金" },
+  { key: "chengdu", label: "成都", caption: "规则有效期" },
+  { key: "chongqing", label: "重庆", caption: "房产税试点" },
+  { key: "xian", label: "西安", caption: "双公积金中心" },
+  { key: "nanjing", label: "南京", caption: "保障房分流" },
   { key: "common", label: "全国通则", caption: "产权、合同、信贷与税费" },
 ];
 
@@ -119,7 +128,7 @@ function SectionCard({ section }: { section: KnowledgeSection }) {
                 <tr key={`${section.id}-${rowIndex}`}>
                   {row.map((cell, cellIndex) => (
                     <td key={`${cell}-${cellIndex}`}>
-                      {/^(BJ|SZ|GZ|NAT)-/.test(cell) || cell.includes("@20") ? (
+                      {/^(BJ|SZ|GZ|SH|TJ|WH|HZ|SU|CD|CQ|XA|NJ|NAT)-/.test(cell) || cell.includes("@20") ? (
                         <code>{cell}</code>
                       ) : (
                         cell
@@ -204,7 +213,9 @@ export function KnowledgeExplorer() {
     if (!window.location.hash) return;
     const id = window.location.hash.slice(1);
     const section = sections.find((item) => item.id === id);
-    if (section) setFilter(section.city);
+    if (!section) return;
+    const timer = window.setTimeout(() => setFilter(section.city), 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const selectFilter = (next: FilterKey) => {
@@ -249,7 +260,6 @@ export function KnowledgeExplorer() {
             onFocus={() => setSearchOpen(true)}
             placeholder="搜索城市、资格、税率、首付或规则 ID"
             aria-label="搜索知识库"
-            aria-expanded={searchOpen && Boolean(query)}
           />
           {query ? (
             <button className="clear-search" onClick={() => setQuery("")} aria-label="清除搜索">
@@ -343,14 +353,14 @@ export function KnowledgeExplorer() {
           <section className="hero">
             <div className="hero-copy">
               <span className="overline">CITY TRANSACTION KNOWLEDGE BASE</span>
-              <h1>全国通则，<br />叠加三个城市政策包。</h1>
+              <h1>全国通则，<br />叠加十二个城市政策包。</h1>
               <p>
                 面向二手房购买决策，沉淀产权、合同、贷款、税费和城市资格知识。
                 每个结论保留规则、版本、适用层级和官方依据。
               </p>
             </div>
             <div className="hero-facts">
-              <div><strong>1+3</strong><span>全国 + 城市包</span></div>
+              <div><strong>1+12</strong><span>全国 + 城市包</span></div>
               <div><strong>{sections.length}</strong><span>知识主题</span></div>
               <div><strong>{knowledgeMeta.monitoredSources}</strong><span>官方入口</span></div>
               <div><strong>{knowledgeMeta.goldenCases}</strong><span>黄金用例</span></div>
@@ -380,7 +390,7 @@ export function KnowledgeExplorer() {
             <div className="section-intro">
               <span>城市政策包</span>
               <h2 id="city-heading">先选城市，再进入完整规则</h2>
-              <p>所有城市先应用全国通则；城市差异集中在资格地域、贷款最低首付、公积金和办理流程。</p>
+              <p>所有城市先应用全国通则；城市包允许不同层级，按限购空间、贷款地域、公积金中心、房产税试点和特殊住房分别组织。</p>
             </div>
             <div className="city-grid">
               {cities.map((city) => (
@@ -430,7 +440,7 @@ export function KnowledgeExplorer() {
       <footer>
         <div>
           <strong>城市二手房交易知识库</strong>
-          <span>全国通则 · 北京 · 深圳 · 广州</span>
+          <span>全国通则 · 12 个城市政策包</span>
         </div>
         <div>
           <span>KB {knowledgeMeta.release}</span>

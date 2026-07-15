@@ -1,4 +1,17 @@
-export type CityKey = "beijing" | "shenzhen" | "guangzhou" | "common";
+export type CityKey =
+  | "beijing"
+  | "shenzhen"
+  | "guangzhou"
+  | "shanghai"
+  | "tianjin"
+  | "wuhan"
+  | "hangzhou"
+  | "suzhou"
+  | "chengdu"
+  | "chongqing"
+  | "xian"
+  | "nanjing"
+  | "common";
 
 export type KnowledgeSource = {
   title: string;
@@ -26,12 +39,12 @@ export type KnowledgeSection = {
 
 export const knowledgeMeta = {
   title: "全国与城市二手房交易知识库",
-  release: "2026.07.15-r2",
-  schemaVersion: "1.3.0",
+  release: "2026.07.15-r3",
+  schemaVersion: "1.4.0",
   asOfDate: "2026-07-15",
   monitoringStatus: "baseline_pending",
-  monitoredSources: 30,
-  goldenCases: 29,
+  monitoredSources: 57,
+  goldenCases: 47,
 };
 
 export const cities = [
@@ -70,6 +83,114 @@ export const cities = [
     commercialDown: "首套 15% · 二套 15%",
     providentDown: "首套 20% · 二套 20%",
     accent: "#536a9f",
+  },
+  {
+    key: "shanghai" as const,
+    name: "上海",
+    code: "310000",
+    version: "sh@2026-02-26.1",
+    effectiveFrom: "2026-02-26",
+    status: "外环分区限购 · 另有房产税",
+    keyInput: "外环内外 + 居住年限",
+    commercialDown: "首套 15% · 二套 20%/25%",
+    providentDown: "首套 20% · 二套 20%/25%",
+    accent: "#9a514d",
+  },
+  {
+    key: "tianjin" as const,
+    name: "天津",
+    code: "120000",
+    version: "tj@2026-02-01.1",
+    effectiveFrom: "2026-02-01",
+    status: "全市不限购 · 贷款按区认定",
+    keyInput: "目标区住房套数",
+    commercialDown: "首套 15% · 二套 15%",
+    providentDown: "首套 20% · 二套 20%",
+    accent: "#4d7180",
+  },
+  {
+    key: "wuhan" as const,
+    name: "武汉",
+    code: "420100",
+    version: "wh@2025-09-30.1",
+    effectiveFrom: "2025-09-30",
+    status: "全市不限购 · 公积金三价取低",
+    keyInput: "成交/评估/计税三价",
+    commercialDown: "全国底线 15% · 银行确认",
+    providentDown: "首套 20% · 二套 30%",
+    accent: "#506b8a",
+  },
+  {
+    key: "hangzhou" as const,
+    name: "杭州",
+    code: "330100",
+    version: "hz@2024-10-09.1",
+    effectiveFrom: "2024-10-09",
+    status: "全市不限购 · 积分不作购房资格",
+    keyInput: "目标区 + 挂牌状态",
+    commercialDown: "全国底线 15% · 银行确认",
+    providentDown: "首套 20% · 二套 20%",
+    accent: "#4f806d",
+  },
+  {
+    key: "suzhou" as const,
+    name: "苏州",
+    code: "320500",
+    version: "su@2026-06-01.1",
+    effectiveFrom: "2026-06-01",
+    status: "不限购不限售 · 县级市分流",
+    keyInput: "区 / 县级市",
+    commercialDown: "最低 15% · 银行确认",
+    providentDown: "首套/二套 15%（限期）",
+    accent: "#70834d",
+  },
+  {
+    key: "chengdu" as const,
+    name: "成都",
+    code: "510100",
+    version: "cd@2026-03-25.1",
+    effectiveFrom: "2026-03-25",
+    status: "不限购 · 取得证后可上市",
+    keyInput: "查询日期 + 房屋性质",
+    commercialDown: "全国底线 15% · 银行确认",
+    providentDown: "首套 20%（截至年末）",
+    accent: "#9a7047",
+  },
+  {
+    key: "chongqing" as const,
+    name: "重庆",
+    code: "500000",
+    version: "cq@2026-02-09.1",
+    effectiveFrom: "2026-02-09",
+    status: "不限购 · 主城房产税试点",
+    keyInput: "目标区 + 房屋类型",
+    commercialDown: "全国底线 15% · 银行确认",
+    providentDown: "首套/二套 20%",
+    accent: "#8b584c",
+  },
+  {
+    key: "xian" as const,
+    name: "西安",
+    code: "610100",
+    version: "xa@2025-07-31.1",
+    effectiveFrom: "2025-07-31",
+    status: "不限购 · 双公积金中心分流",
+    keyInput: "缴存管理中心",
+    commercialDown: "全国底线 15% · 银行确认",
+    providentDown: "省中心首套 20% · 再次 25%",
+    accent: "#8b6748",
+  },
+  {
+    key: "nanjing" as const,
+    name: "南京",
+    code: "320100",
+    version: "nj@2026-04-16.1",
+    effectiveFrom: "2026-04-16",
+    status: "不限购不限售 · 保障房专门流转",
+    keyInput: "普通商品房 / 保障房",
+    commercialDown: "全国底线 15% · 银行确认",
+    providentDown: "首套/二套 20%",
+    accent: "#6d5e8b",
   },
 ];
 
@@ -128,6 +249,60 @@ const nationalFinanceSources: KnowledgeSource[] = [
     title: "中国人民银行：下调个人住房公积金贷款利率",
     url: "https://app.www.gov.cn/govdata/gov/202505/07/528461/article.html",
   },
+];
+
+const shanghaiSources: KnowledgeSource[] = [
+  { title: "上海 2026 年房地产政策", url: "https://www.shanghai.gov.cn/nw31406/20260227/961ca351f504470f90ff4d3d001bb613.html" },
+  { title: "上海商业贷款首付政策", url: "https://www.shanghai.gov.cn/cmsres/85/85a76ed299344c8e8875c634a5d40112/c76d21c1fb0591c2337efe54fa2f4677.pdf" },
+  { title: "上海 2026 年公积金通知与问答", url: "https://www.shanghai.gov.cn/xbhygq/20260228/87e93e4c373c4bfe81af5557a77d2e70.html" },
+];
+
+const tianjinSources: KnowledgeSource[] = [
+  { title: "天津取消住房限购政策解读", url: "https://www.tj.gov.cn/zwgk/zcjd/202410/t20241016_6754085.html" },
+  { title: "天津 2026 年公积金政策", url: "https://www.tj.gov.cn/sy/tjxw/202601/t20260127_7232106.html" },
+  { title: "天津直管公产住房使用权规则", url: "https://ghhzrzy.tj.gov.cn/yshj/yhyshjxzspzdggzt/zcfg3/bdcdjn/tjszcwjbdc/202404/t20240412_6598188.html" },
+];
+
+const wuhanSources: KnowledgeSource[] = [
+  { title: "武汉取消住房限购通知", url: "https://zgj.wuhan.gov.cn/zwdt/tzgg/202309/t20230928_2273274.shtml" },
+  { title: "武汉公积金二手房贷款指南", url: "https://gjj.wuhan.gov.cn/bsfw/ywzl/ywzn/dkyw/202412/t20241219_2504837.html" },
+  { title: "武汉公积金 2025 年年度报告", url: "https://gjj.wuhan.gov.cn/zwgk/ndbg/202603/t20260326_2745342.html" },
+];
+
+const hangzhouSources: KnowledgeSource[] = [
+  { title: "杭州全面取消住房限购政策", url: "https://www.hzarchives.org.cn/info/12166" },
+  { title: "杭州公积金政策文件", url: "https://gjj.hangzhou.gov.cn/attach/0/ea4c9466f14b4d749ddc7e385e747900.pdf" },
+  { title: "杭州居住证积分管理规则", url: "https://police.hangzhou.gov.cn/art/2024/8/14/art_1229436763_4290774.html" },
+];
+
+const suzhouSources: KnowledgeSource[] = [
+  { title: "苏州住房政策回顾与现行口径", url: "https://www.suzhou.gov.cn/2025ndzt/fjxsd/202601/37a3fd39b7464851b0ecc266a9fea2d8.shtml" },
+  { title: "苏州公积金 15% 首付通知", url: "https://www.suzhou.gov.cn/szsrmzf/bmwj/202508/49c061c990664ccf997a9a56aebe0933.shtml" },
+  { title: "苏州 2026 年公积金额度政策", url: "https://www.suzhou.gov.cn/szsrmzf/dstx/202605/d7bf7a1d2f55450db7a81f3b48883fa6.shtml" },
+];
+
+const chengduSources: KnowledgeSource[] = [
+  { title: "四川住建厅转载成都取消购房资格审核", url: "https://jst.sc.gov.cn/scjst/cjfdcscpwjkfz/2024/4/29/bf2d4d6577f94b15ac7a04feda6f0a31.shtml" },
+  { title: "成都住房取得产权证后可上市", url: "https://news.chengdu.cn/2024/1015/2448438.shtml" },
+  { title: "成都 2026 年阶段性公积金政策", url: "https://www.news.cn/20260324/e4548eb47b1741c5a8d4aedff49136a5/c.html" },
+];
+
+const chongqingSources: KnowledgeSource[] = [
+  { title: "重庆住房公积金贷款指南", url: "https://www.cqgjj.cn/ywzn/gjjdkzn/2653.htm" },
+  { title: "重庆个人住房房产税试点政策", url: "https://www.cq.gov.cn/zwgk/zfxxgkml/szfwj/xzgfxwj/szfbgt/202505/t20250527_14659500_app.html" },
+  { title: "重庆财政局房产税政策解读", url: "https://czj.cq.gov.cn/zwgk_268/zfxxgkml/zcjd/bmjd/202505/t20250523_14650218.html" },
+];
+
+const xianSources: KnowledgeSource[] = [
+  { title: "西安取消住房限购政策公开报道", url: "https://news.bjd.com.cn/2024/05/09/10768000.shtml" },
+  { title: "陕西省住房资金管理中心贷款政策", url: "https://www.sxgjj.com/info/1333/13575.htm" },
+  { title: "西安住房公积金管理中心现行利率", url: "https://zfgjj.xa.gov.cn/gzdt/tzgg/1920023668442849281.html" },
+];
+
+const nanjingSources: KnowledgeSource[] = [
+  { title: "南京全市取消普通住房购房证明", url: "https://fcj.nanjing.gov.cn/dtxx/mtdt/202309/t20230908_4005817.html" },
+  { title: "南京取消商品住房限售", url: "https://sw.nanjing.gov.cn/ywdd/yqjj/202504/t20250401_5108134.html" },
+  { title: "南京公积金额度调整", url: "https://gjj.nanjing.gov.cn/zwgk/tzgg/202510/t20251009_5662167.html" },
 ];
 
 export const sections: KnowledgeSection[] = [
@@ -572,6 +747,459 @@ export const sections: KnowledgeSection[] = [
     keywords: ["缺失输入", "追问", "户籍", "社保", "住房套数"],
   },
   {
+    id: "sh-eligibility",
+    city: "shanghai",
+    category: "购房资格与结构",
+    title: "上海按外环内外判断购房资格",
+    summary: "上海不能套用不限购城市模板。先判断外环内外，再结合沪籍、居住证年限、连续社保/个税年限和分区住房套数。",
+    table: {
+      headers: ["家庭类型", "外环内", "外环外", "规则 ID"],
+      rows: [
+        ["沪籍家庭或成年单身", "最多 2 套", "不限套数", "SH-ELIG-001"],
+        ["非沪籍，连续社保/个税满 1 年不足 3 年", "最多 1 套", "不限套数", "SH-ELIG-002"],
+        ["非沪籍，连续社保/个税满 3 年", "最多 2 套", "不限套数", "SH-ELIG-003"],
+        ["非沪籍，上海居住证满 5 年", "全市最多 1 套且不要求社保/个税", "同左", "SH-ELIG-004"],
+      ],
+    },
+    note: "知识形态：restricted_spatial_quota + local_property_tax。特殊人才、境外个人和企业购房转人工核验。",
+    sources: shanghaiSources,
+    keywords: ["上海", "外环", "沪籍", "非沪籍", "居住证五年", "限购"],
+  },
+  {
+    id: "sh-financing",
+    city: "shanghai",
+    category: "贷款与首付",
+    title: "上海二套首付存在差异化区域",
+    summary: "首套商贷最低 15%；二套一般 25%，临港及嘉定、青浦、松江、奉贤、宝山、金山为 20%。公积金也采用一般区与差异化区域分流。",
+    table: {
+      headers: ["方案", "首套", "二套", "规则 ID"],
+      rows: [
+        ["商业贷款", "15%", "一般 25%；差异化区域 20%", "SH-LOAN-COM-001"],
+        ["公积金贷款", "20%", "一般 25%；差异化区域 20%", "SH-LOAN-PF-001"],
+        ["公积金最高额度", "个人/家庭 100/200 万；含补充 120/240 万", "个人/家庭 80/160 万；含补充 100/200 万", "SH-LOAN-PF-002"],
+      ],
+    },
+    details: ["行政区是贷款输入，不只是购房资格输入。", "最低首付不等于银行对具体借款人和房源的最终批贷。"],
+    sources: shanghaiSources,
+    keywords: ["上海首付", "临港", "嘉定", "宝山", "补充公积金"],
+  },
+  {
+    id: "sh-tax-special",
+    city: "shanghai",
+    category: "税费与本地特殊项",
+    title: "上海房产税与过户税必须分开",
+    summary: "契税、增值税和满五唯一个税先按全国规则；上海个人住房房产税属于持有环节，应单独返回状态和年度金额。",
+    details: [
+      "上海已取消普通/非普通住房标准；不能核实原值时，个人转让住房个税可按转让收入 1% 核定。",
+      "满五唯一按上海市范围核验卖方及配偶住房。",
+      "房产税需补购房日期、房屋类型、家庭人数、家庭面积和免税资格；信息不足时返回 unknown，不得报 0 元。",
+    ],
+    note: "规则 SH-TAX-PROPERTY-ROUTE-001：持有税不能直接并入过户时现金总额。",
+    sources: [...shanghaiSources, ...nationalTaxSources],
+    keywords: ["上海房产税", "普通住房标准", "核定个税1%", "满五唯一"],
+  },
+  {
+    id: "tj-eligibility",
+    city: "tianjin",
+    category: "购房资格与结构",
+    title: "天津不限购，但贷款套数按目标区认定",
+    summary: "自 2024-10-16 起，本市和非本市居民购买普通新房、二手房不再提交社保或个税资格材料；贷款仍需输入拟购住房所在区的套数。",
+    table: {
+      headers: ["判断层", "现行结论", "规则 ID"],
+      rows: [
+        ["普通商品住房购房资格", "全市开放，不因非津户籍或社保年限不合格", "TJ-ELIG-001"],
+        ["商业贷款套数", "按拟购住房所在行政区认定", "TJ-LOAN-COM-001"],
+        ["特殊产权", "直管公产使用权等转专项规则", "TJ-TRANSFER-001"],
+      ],
+    },
+    sources: tianjinSources,
+    keywords: ["天津不限购", "按区认定", "非津户籍", "直管公产"],
+  },
+  {
+    id: "tj-financing",
+    city: "tianjin",
+    category: "贷款与首付",
+    title: "天津商贷 15%，公积金 20%",
+    summary: "商贷首套、二套政策最低首付均为 15%；公积金首套、二套均为 20%，但实际额度受房龄、缴存、征信和评估价约束。",
+    table: {
+      headers: ["项目", "现行口径", "规则 ID"],
+      rows: [
+        ["商贷首套/二套", "最低首付 15% / 15%", "TJ-LOAN-COM-001"],
+        ["公积金首套/二套", "最低首付 20% / 20%", "TJ-LOAN-PF-001"],
+        ["公积金最高额度", "首套 120 万；二套 100 万", "TJ-LOAN-PF-002"],
+        ["多子女家庭", "首套 144 万；二套 120 万", "TJ-LOAN-PF-003"],
+        ["二手房最长期限", "30 年", "TJ-LOAN-PF-004"],
+      ],
+    },
+    note: "只给天津全市住房套数、未给目标区套数时，商贷认定返回 conditional。",
+    sources: tianjinSources,
+    keywords: ["天津首付", "120万", "多子女", "二手房30年"],
+  },
+  {
+    id: "tj-transfer-tax-inputs",
+    city: "tianjin",
+    category: "特殊产权与税费",
+    title: "直管公产使用权不是普通商品房产权",
+    summary: "取消商品住房限购不等于所有房屋使用权都可自由取得。直管公产、公有住房承租权、限价房和保障房必须先识别权利类型。",
+    details: [
+      "普通住房税费执行全国规则，满五唯一按天津市范围核验。",
+      "最少追问：目标区、该区家庭套数、产权证记载、面积和三种价格、卖方取得日期、贷款方式与费用承担。",
+      "直管公产使用权的价款、税费和登记路径不能复用普通所有权买卖公式。",
+    ],
+    sources: [...tianjinSources, ...nationalTaxSources],
+    keywords: ["天津直管公产", "公有住房", "使用权", "天津税费"],
+  },
+  {
+    id: "wh-eligibility",
+    city: "wuhan",
+    category: "购房资格与结构",
+    title: "武汉普通商品住房不再审核个人购房资格",
+    summary: "武汉已取消普通商品住房个人购房资格审查，不再按户籍、社保或已有套数限制普通二手房购买资格。",
+    details: [
+      "WH-ELIG-001：自然人购买普通二手商品住房为 eligible；企业、境外个人和政策性住房例外。",
+      "取消购房资格审查不免除产权、查封、抵押、共有、租赁和居住权核验。",
+      "已届满的阶段性购房补贴不得进入当前现金总额。",
+    ],
+    sources: wuhanSources,
+    keywords: ["武汉不限购", "购房资格", "补贴有效期"],
+  },
+  {
+    id: "wh-financing",
+    city: "wuhan",
+    category: "贷款与首付",
+    title: "武汉公积金二手房按三价取低",
+    summary: "公积金首套/二套最高贷款成数为 80%/70%；二手房价值基数取评估价、成交价和计税价格中的最低值。",
+    table: {
+      headers: ["项目", "现行口径", "规则 ID"],
+      rows: [
+        ["商贷", "全国 15% 政策底线，银行个案确认", "WH-LOAN-COM-001"],
+        ["公积金首套", "最高成数 80%，最低首付 20%", "WH-LOAN-PF-001"],
+        ["公积金二套", "最高成数 70%，最低首付 30%", "WH-LOAN-PF-002"],
+        ["最高额度", "单缴存人 120 万；双缴存人 150 万", "WH-LOAN-PF-003"],
+        ["二手房价值基数", "min(评估价, 成交价, 计税价)", "WH-LOAN-PF-BASE-001"],
+      ],
+    },
+    sources: wuhanSources,
+    keywords: ["武汉公积金", "三价取低", "120万", "150万", "首付30%"],
+  },
+  {
+    id: "wh-tax-inputs",
+    city: "wuhan",
+    category: "税费与必填信息",
+    title: "武汉缺三价时不能精确计算公积金首付",
+    summary: "税费执行全国规则，满五唯一按湖北省范围核验；贷款计算还需同时取得成交价、评估价和计税价格。",
+    details: [
+      "最少追问产权性质、面积、三种价格、卖方取得日期和湖北省家庭住房情况。",
+      "补充贷款方式、公积金缴存人数和记录、房龄、收入征信、费用承担。",
+      "商贷只确认全国 15% 底线时，应写银行核验，不输出保证比例。",
+    ],
+    sources: [...wuhanSources, ...nationalTaxSources],
+    keywords: ["湖北满五唯一", "武汉计税价", "银行核验", "缺失输入"],
+  },
+  {
+    id: "hz-eligibility-points",
+    city: "hangzhou",
+    category: "购房资格与积分消歧",
+    title: "杭州不限购，居住证积分不是买房门槛",
+    summary: "2024-05-09 起杭州全面取消住房限购。购房产生的居住证积分用于落户相邻场景，不决定普通二手房能否购买或房源排序。",
+    table: {
+      headers: ["问题", "现行结论", "规则 ID"],
+      rows: [
+        ["普通商品住房资格", "不审查户籍、社保和购买套数", "HZ-ELIG-001"],
+        ["购房并实际居住", "现行居住证积分可计 80 分", "HZ-POINTS-001"],
+        ["二手房用于积分", "原户口需迁出，且一年内未被用于积分落户", "HZ-POINTS-001"],
+      ],
+    },
+    note: "用户问“杭州买房要多少积分”时，先确认是在问购房、落户、学位还是保障房。",
+    sources: hangzhouSources,
+    keywords: ["杭州积分", "落户80分", "不限购", "原户口迁出"],
+  },
+  {
+    id: "hz-financing",
+    city: "hangzhou",
+    category: "贷款与首付",
+    title: "杭州商贷首套认定需要目标区与挂牌状态",
+    summary: "拟购区无房，或仅有一套且正在挂牌出售，可按现行商贷首套路径认定；公积金首套、二套最低首付均为 20%。",
+    table: {
+      headers: ["项目", "现行口径", "规则 ID"],
+      rows: [
+        ["商贷首套认定", "拟购区无房，或仅一套且挂牌出售", "HZ-LOAN-COM-001"],
+        ["商贷首付", "全国 15% 政策底线，银行个案确认", "HZ-LOAN-COM-002"],
+        ["公积金首套/二套", "最低首付均为 20%", "HZ-LOAN-PF-001"],
+        ["公积金最高额度", "个人 65 万；家庭 130 万", "HZ-LOAN-PF-002"],
+      ],
+    },
+    sources: hangzhouSources,
+    keywords: ["杭州首套", "挂牌出售", "65万", "130万", "公积金20%"],
+  },
+  {
+    id: "hz-tax-inputs",
+    city: "hangzhou",
+    category: "税费与必填信息",
+    title: "购房资格开放后，税贷套数仍要分别判断",
+    summary: "杭州普通二手房税费执行全国规则，满五唯一按浙江省范围核验；不限购不能代替契税、商贷或公积金套数认定。",
+    details: [
+      "最少追问目标区、该区住房与挂牌状态、产权性质、面积和三种价格。",
+      "补充卖方取得日期、卖方及配偶在浙江省住房、贷款方式与公积金缴存。",
+      "若另问积分落户，再补实际居住、原户口迁出和一年内积分使用事实。",
+    ],
+    sources: [...hangzhouSources, ...nationalTaxSources],
+    keywords: ["浙江满五唯一", "杭州契税", "套数认定", "必填信息"],
+  },
+  {
+    id: "su-eligibility-transfer",
+    city: "suzhou",
+    category: "购房与转让",
+    title: "苏州普通住房不限购不限售，特殊房源除外",
+    summary: "苏州已逐步取消普通商品住房购房和一般限售。定向销售、保障性或合同另有限制的房屋仍需读取原始项目文件。",
+    table: {
+      headers: ["判断", "现行结论", "规则 ID"],
+      rows: [
+        ["普通商品住房资格", "不再按原户籍、社保和套数限购", "SU-ELIG-001"],
+        ["普通商品住房一般限售", "已取消", "SU-TRANSFER-001"],
+        ["定向/保障/合同限制", "专项核验，返回 conditional", "SU-TRANSFER-001"],
+      ],
+    },
+    note: "苏州下辖县级市办理口径可能不同，必须输入具体区或县级市。",
+    sources: suzhouSources,
+    keywords: ["苏州不限购", "苏州不限售", "县级市", "定向住房"],
+  },
+  {
+    id: "su-financing",
+    city: "suzhou",
+    category: "贷款与时效",
+    title: "苏州公积金 15% 首付是限时规则",
+    summary: "2025-09-01 起两年内，公积金首套、二套最低首付均为 15%；2026-06-01 起个人/家庭最高额度为 150/200 万元。",
+    table: {
+      headers: ["项目", "现行口径", "有效期/规则 ID"],
+      rows: [
+        ["商贷", "最低首付 15%，银行确认", "SU-LOAN-COM-001"],
+        ["公积金首套/二套", "最低首付均为 15%", "2025-09-01—2027-08-31 / SU-LOAN-PF-001"],
+        ["公积金额度", "个人 150 万；家庭 200 万", "2026-06-01 起 / SU-LOAN-PF-002"],
+        ["首套认定", "全国无未结清公积金贷款可按首套政策", "SU-LOAN-PF-003"],
+      ],
+    },
+    note: "2027-09-01 后若没有续期或替代文件，15% 规则返回 unknown/needs_review，不能沿用。",
+    sources: suzhouSources,
+    keywords: ["苏州15%", "2027年8月31日", "150万", "200万", "规则失效"],
+  },
+  {
+    id: "su-tax-inputs",
+    city: "suzhou",
+    category: "税费与必填信息",
+    title: "苏州需要输入具体区或县级市",
+    summary: "税费执行全国规则，满五唯一按江苏省范围核验；县级市流程差异和阶段性公积金规则都要求保留查询日期。",
+    details: [
+      "追问具体区/县级市、房屋是否定向或保障属性、产权负担、面积和三种价格。",
+      "补充卖方取得日期及江苏省家庭住房、贷款方式、公积金缴存与贷款记录。",
+      "旧页面显示 20% 与新正式通知冲突时，优先使用较新正式通知并展示有效期。",
+    ],
+    sources: [...suzhouSources, ...nationalTaxSources],
+    keywords: ["江苏满五唯一", "苏州县级市", "旧页面20%", "政策版本"],
+  },
+  {
+    id: "cd-eligibility-transfer",
+    city: "chengdu",
+    category: "购房与转让",
+    title: "成都不限购，取得证后可上市",
+    summary: "2024-04-29 起全市不再审核购房资格；2024-10-15 起普通住房取得不动产权证后即可上市，但权利负担和特殊项目限制仍需核验。",
+    table: {
+      headers: ["判断", "现行结论", "规则 ID"],
+      rows: [
+        ["普通商品住房资格", "不审查户籍、社保和套数", "CD-ELIG-001"],
+        ["普通二手房一般限售", "取得产权证后可上市", "CD-TRANSFER-001"],
+        ["满二/满五", "仍是税收年限，不是转让限制", "CD-SCOPE-001"],
+      ],
+    },
+    sources: chengduSources,
+    keywords: ["成都不限购", "取得证后上市", "满二", "限售取消"],
+  },
+  {
+    id: "cd-financing",
+    city: "chengdu",
+    category: "贷款与时效",
+    title: "成都 2026 年公积金政策年底到期",
+    summary: "2026-03-25 至 2026-12-31，单缴存人/双缴存人最高 80/120 万元；无未结清公积金贷款可按首套，最低首付 20%。",
+    table: {
+      headers: ["项目", "现行口径", "规则 ID"],
+      rows: [
+        ["商贷", "全国 15% 政策底线，银行确认", "CD-LOAN-COM-001"],
+        ["公积金首套", "无未结清公积金贷款，最低首付 20%", "CD-LOAN-PF-001"],
+        ["公积金额度", "单缴存人 80 万；双缴存人 120 万", "CD-LOAN-PF-002"],
+        ["特殊家庭上浮", "符合现行条件可上浮 20%", "CD-LOAN-PF-003"],
+      ],
+    },
+    note: "以上公积金子规则 effective_to = 2027-01-01；之后无续期证据时必须 needs_review。",
+    sources: chengduSources,
+    keywords: ["成都公积金", "80万", "120万", "2026年12月31日", "阶段性"],
+  },
+  {
+    id: "cd-tax-inputs",
+    city: "chengdu",
+    category: "税费与必填信息",
+    title: "取消限售不能替代满二满五判断",
+    summary: "成都税费执行全国规则，满五唯一按四川省范围核验；能上市不代表卖方自动免增值税或个税。",
+    details: [
+      "追问查询日期、产权性质、取得证日期、面积、三种价格和费用承担。",
+      "补充卖方税务取得日期与四川省家庭住房、公积金贷款状态、缴存人数。",
+      "政策性住房和定向项目不能只凭取得产权证判定自由转让。",
+    ],
+    sources: [...chengduSources, ...nationalTaxSources],
+    keywords: ["四川满五唯一", "成都增值税", "能卖不等于免税", "查询日期"],
+  },
+  {
+    id: "cq-eligibility-structure",
+    city: "chongqing",
+    category: "购房资格与结构",
+    title: "重庆不限购，但贷款和房产税都要看区位",
+    summary: "普通自然人商品住房没有一般性户籍、社保或套数限购；贷款套数按拟购区判断，主城试点区域的高档住房和独栋住宅另查房产税。",
+    table: {
+      headers: ["判断层", "现行结论", "规则 ID"],
+      rows: [
+        ["普通商品住房资格", "不作一般限购审查", "CQ-ELIG-001"],
+        ["贷款住房套数", "按拟购住房所在区认定", "CQ-LOAN-PF-001"],
+        ["本地持有税", "试点区高档/独栋住房独立判断", "CQ-TAX-PROPERTY-001"],
+      ],
+    },
+    note: "只回答“重庆不限购”会遗漏贷款地域和个人住房房产税两条关键分支。",
+    sources: chongqingSources,
+    keywords: ["重庆不限购", "按区认定", "主城九区", "房产税试点"],
+  },
+  {
+    id: "cq-financing",
+    city: "chongqing",
+    category: "贷款与首付",
+    title: "重庆公积金首套二套最高成数均为 80%",
+    summary: "公积金个人/夫妻参贷最高 80/120 万元，多子女家庭 100/160 万元；二手房价值基数取评估价与登记成交价较低值。",
+    table: {
+      headers: ["项目", "现行口径", "规则 ID"],
+      rows: [
+        ["商贷", "全国 15% 政策底线，银行确认", "CQ-LOAN-COM-001"],
+        ["公积金首套/二套", "最高成数均 80%，最低首付 20%", "CQ-LOAN-PF-001"],
+        ["普通家庭额度", "个人 80 万；夫妻参贷 120 万", "CQ-LOAN-PF-002"],
+        ["多子女家庭额度", "个人 100 万；夫妻参贷 160 万", "CQ-LOAN-PF-003"],
+        ["二手房价值基数", "min(评估价, 登记成交价)", "CQ-LOAN-PF-004"],
+      ],
+    },
+    details: ["两次及以上公积金贷款记录，或拟购区三套及以上住房等情形，不得只凭首付比例判定可贷。"],
+    sources: chongqingSources,
+    keywords: ["重庆公积金", "80万", "160万", "评估价", "区内套数"],
+  },
+  {
+    id: "cq-property-tax",
+    city: "chongqing",
+    category: "个人住房房产税",
+    title: "重庆试点房产税需单独计算年度持有成本",
+    summary: "试点区域内独栋商品住宅和新购高档住房需判断房产税。普通过户税与持有税分别返回，缺房屋类型或区域时不能报 0 元。",
+    formula: ["年应纳税额 =（应税住房交易价 × 70% − 可扣除免税面积对应计税价值）× 0.5%"],
+    details: [
+      "家庭一套应税住房可适用 180㎡免税面积，具体分摊和申报以税务口径为准。",
+      "2025-01-01 起，无重庆户籍、企业或工作的人员购买普通住房不再因此单独纳税；高档和独栋仍需判断。",
+      "满五唯一按重庆市范围核验；过户税继续使用全国规则。",
+    ],
+    sources: [...chongqingSources, ...nationalTaxSources],
+    keywords: ["重庆房产税", "70%", "0.5%", "180平方米", "独栋", "高档住房"],
+  },
+  {
+    id: "xa-eligibility-structure",
+    city: "xian",
+    category: "购房资格与结构",
+    title: "西安不限购，公积金必须先选择管理中心",
+    summary: "居民购买普通新房、二手房不再审核购房资格；公积金知识采用双管理中心结构，西安中心与陕西省中心不得混算。",
+    table: {
+      headers: ["判断", "现行结论", "规则 ID"],
+      rows: [
+        ["普通商品住房资格", "不按户籍、社保和已有套数限购", "XA-ELIG-001"],
+        ["公积金路由", "先输入 fund_administration_center", "XA-LOAN-PF-ROUTE-001"],
+        ["中心未知", "额度与资格返回 conditional", "XA-LOAN-PF-ROUTE-001"],
+      ],
+    },
+    note: "购房资格取消的公开依据目前以授权公开报道快照为补充来源，市级原文仍列入监测补强项。",
+    sources: xianSources,
+    keywords: ["西安不限购", "陕西省中心", "西安中心", "fund_administration_center"],
+  },
+  {
+    id: "xa-financing",
+    city: "xian",
+    category: "贷款与首付",
+    title: "省中心额度不能当成西安中心额度",
+    summary: "已核验的陕西省中心口径为首套/再次使用公积金最低首付 20%/25%，单人/双人最高 75/100 万元；西安中心需使用其自身现行规则。",
+    table: {
+      headers: ["管理中心", "首付与额度", "规则 ID"],
+      rows: [
+        ["陕西省住房资金管理中心", "首套 20%、再次 25%；单人 75 万、双人 100 万", "XA-LOAN-PF-SX-001"],
+        ["西安住房公积金管理中心", "按中心当前正式规则核验，不能套省中心数字", "XA-LOAN-PF-XA-001"],
+        ["商业贷款", "全国 15% 政策底线，银行个案确认", "XA-LOAN-COM-001"],
+      ],
+    },
+    details: ["省中心二手房房龄一般不超过 30 年，房龄与贷款期限之和不超过 40 年。"],
+    sources: xianSources,
+    keywords: ["西安公积金", "省中心", "75万", "100万", "房龄30年"],
+  },
+  {
+    id: "xa-tax-inputs",
+    city: "xian",
+    category: "税费与必填信息",
+    title: "西安公积金缺管理中心时不能给确定额度",
+    summary: "税费执行全国规则，满五唯一按陕西省范围核验；贷款追问必须包含缴存管理中心、房龄、缴存人数和贷款记录。",
+    details: [
+      "追问产权性质、面积、合同价、评估价和计税价。",
+      "补充卖方取得日期、卖方及配偶在陕西省住房、费用承担约定。",
+      "中心未知时只提供分流提示，不选择对用户更有利的一套数字。",
+    ],
+    sources: [...xianSources, ...nationalTaxSources],
+    keywords: ["陕西满五唯一", "西安必填信息", "管理中心未知", "公积金额度"],
+  },
+  {
+    id: "nj-eligibility-transfer",
+    city: "nanjing",
+    category: "购房与转让",
+    title: "南京普通商品住房不限购不限售",
+    summary: "普通商品住房不再要求原购房证明，一般限售也已取消；取得不动产权证并排除权利障碍后可上市。",
+    table: {
+      headers: ["判断", "现行结论", "规则 ID"],
+      rows: [
+        ["普通商品住房资格", "不再要求原购房证明", "NJ-ELIG-001"],
+        ["普通商品住房一般限售", "取得不动产权证后可上市", "NJ-TRANSFER-001"],
+        ["配售型保障房", "专门平台和买方资格，不按普通房自由出售", "NJ-TRANSFER-AFFORDABLE-001"],
+      ],
+    },
+    sources: nanjingSources,
+    keywords: ["南京不限购", "南京不限售", "购房证明", "配售型保障房"],
+  },
+  {
+    id: "nj-financing",
+    city: "nanjing",
+    category: "贷款与首付",
+    title: "南京公积金首套二套均为 20% 首付",
+    summary: "公积金个人/家庭最高额度为 80/100 万元；2026 年扩展父母与子女共同借款路径，但共同借款不代表无条件提高额度。",
+    table: {
+      headers: ["项目", "现行口径", "规则 ID"],
+      rows: [
+        ["商贷", "全国 15% 政策底线，银行确认", "NJ-LOAN-COM-001"],
+        ["公积金首套/二套", "最低首付均为 20%", "NJ-LOAN-PF-001"],
+        ["公积金额度", "个人 80 万；家庭 100 万", "NJ-LOAN-PF-002"],
+        ["父母子女共同借款", "满足中心条件可走扩展路径", "NJ-LOAN-PF-003"],
+      ],
+    },
+    sources: nanjingSources,
+    keywords: ["南京公积金", "80万", "100万", "共同借款", "父母子女"],
+  },
+  {
+    id: "nj-special-tax-inputs",
+    city: "nanjing",
+    category: "特殊住房与税费",
+    title: "配售型保障房满五年也不是普通二手房",
+    summary: "配售型保障房达到规定年限后仍可能只能经指定平台转让给符合条件的买方；必须读取原购房合同和项目类型。",
+    details: [
+      "普通住房税费执行全国规则，满五唯一按江苏省范围核验。",
+      "追问房屋是否保障/共有产权/定向住房、取得证日期、权利负担、面积和三种价格。",
+      "补充卖方取得日期及江苏省住房、公积金共同借款人与缴存信息、费用承担。",
+    ],
+    sources: [...nanjingSources, ...nationalTaxSources],
+    keywords: ["南京保障房", "满五年", "指定平台", "江苏满五唯一"],
+  },
+  {
     id: "common-priority",
     city: "common",
     category: "知识范围",
@@ -587,7 +1215,7 @@ export const sections: KnowledgeSection[] = [
     },
     details: [
       "未指定城市时，全国知识只能回答真正通用的部分；购房资格应返回 unknown 并追问城市、区域和房屋性质。",
-      "全国知识包版本为 cn@2026-07-15.1；北京、深圳、广州继续保留各自城市政策包版本。",
+      "全国知识包版本为 cn@2026-07-15.1；12 个城市分别保留自己的政策包版本和知识形态。",
       "全国知识包是 2026-07-15 的已审核快照，各条规则仍按自身生效日期查询，不能把快照日期当作所有法律的生效日。",
     ],
     note: "优先级：国家法律和全国政策底线 → 城市现行规则 → 机构对本案的正式审核。",
@@ -729,7 +1357,7 @@ export const sections: KnowledgeSection[] = [
     city: "common",
     category: "口径边界",
     title: "AI 回答前必须先消歧",
-    summary: "“首套”“满二”“满五唯一”“不限购”“最高额度”和“深圳积分”都不是单义词；场景未确认时不能直接套规则。",
+    summary: "“首套”“满二”“满五唯一”“不限购”“最高额度”和“积分”都不是单义词；场景未确认时不能直接套规则。",
     table: {
       headers: ["用户说法", "必须拆分的口径", "错误回答风险"],
       rows: [
@@ -738,10 +1366,11 @@ export const sections: KnowledgeSection[] = [
         ["不限购", "只代表普通居民商品住房购买数量限制的变化", "误称贷款、税费、产权限制也取消"],
         ["最高可贷", "政策封顶、余额倍数、还款能力、房屋限制、银行授信", "把封顶金额当实际批贷"],
         ["深圳积分", "普通二手房、新房意向登记、保障房、入户、学位", "给普通二手房虚构统一积分门槛"],
+        ["杭州积分", "普通二手房购房资格、居住证积分落户、学位", "把落户 80 分误成买房门槛"],
       ],
     },
-    note: "普通深圳二手商品住房适用 SZ-SCOPE-POINTS-001：没有统一积分排名；广州境外个人适用 GZ-ELIG-FOREIGN-001：来源冲突时返回 conditional/needs_review。",
-    keywords: ["消歧", "首套", "满五唯一", "不限购", "深圳积分", "最高额度", "境外个人"],
+    note: "普通深圳二手商品住房没有统一积分排名；杭州居住证购房积分不决定普通二手房资格；广州境外个人来源冲突时返回 conditional/needs_review。",
+    keywords: ["消歧", "首套", "满五唯一", "不限购", "深圳积分", "杭州积分", "最高额度", "境外个人"],
   },
   {
     id: "common-tax",
@@ -768,7 +1397,7 @@ export const sections: KnowledgeSection[] = [
     },
     details: [
       "契税的家庭套数认定不能用贷款首套、二套认定替代。",
-      "北京的唯一住房范围为北京市；深圳、广州为广东省，并同时核验卖方与配偶。",
+      "直辖市按本市范围核验满五唯一；其他城市按所在省范围，并同时核验卖方与配偶。",
       "换购退税属于卖方后续可申请款项，未到账前不得直接冲减交易时需准备的现金。",
       "增值税含税价换算和附加税额以当地税务申报系统为准。",
       "无法提供原值凭证时，由主管税务机关决定核定口径，不应跨城市统一硬编码 1%。",
@@ -833,6 +1462,15 @@ export const sections: KnowledgeSection[] = [
         ["北京", "bj@2025-08-09.1", "bj@2025-12-24.1", "2025-12-24"],
         ["深圳", "sz@2025-09-06.1", "sz@2026-04-30.1", "2026-04-30"],
         ["广州", "gz@2024-05-29.1", "gz@2024-09-30.1", "2024-09-30"],
+        ["上海", "更早完整包未物化", "sh@2026-02-26.1", "2026-02-26"],
+        ["天津", "不限购基线自 2024-10-16", "tj@2026-02-01.1", "2026-02-01"],
+        ["武汉", "不限购基线自 2023-09-19", "wh@2025-09-30.1", "2025-09-30"],
+        ["杭州", "不限购基线自 2024-05-09", "hz@2024-10-09.1", "2024-10-09"],
+        ["苏州", "一般限售取消自 2025-08-27", "su@2026-06-01.1", "2026-06-01"],
+        ["成都", "不限购基线自 2024-04-29", "cd@2026-03-25.1", "2026-03-25"],
+        ["重庆", "房产税调整基线自 2025-01-01", "cq@2026-02-09.1", "2026-02-09"],
+        ["西安", "不限购基线自 2024-05-09", "xa@2025-07-31.1", "2025-07-31"],
+        ["南京", "不限购基线自 2023-09-08", "nj@2026-04-16.1", "2026-04-16"],
         ["全国住房增值税", "更早版本未物化", "NAT-TAX-VAT-001@2026-01-01.1", "2026-01-01"],
         ["换购住房个税退税", "2024—2025 延续期", "NAT-TAX-IIT-REFUND-001@2026-01-01.1", "2026-01-01"],
         ["满五唯一地域范围", "仅保存现行口径", "NAT-TAX-IIT-UNIQUE-001@current.1", "current-only"],
@@ -843,7 +1481,7 @@ export const sections: KnowledgeSection[] = [
       "查询日期早于已登记覆盖范围时返回 unknown，不用现行规则倒推。",
       "全国知识包日期是知识快照，不是民法典、登记费或信贷政策共同的生效日；每个规则族保留自身有效区间。",
       "城市政策包没有因本次全国补全而伪造新生效日；全国与共享知识族独立增加版本。",
-      "一次发布使用 kb_release 整体回滚；当前发布为 2026.07.15-r2。",
+      "一次发布使用 kb_release 整体回滚；当前发布为 2026.07.15-r3。",
     ],
     keywords: ["版本", "历史政策", "effective_from", "回滚", "政策演变"],
   },
@@ -866,7 +1504,7 @@ export const sections: KnowledgeSection[] = [
     details: [
       "监测器对官方页面规范化可见文本计算 SHA-256，变化进入人工审核队列。",
       "完成条款影响分析、规则更新、黄金用例和人工审核后，才生成新发布版本。",
-      "当前接入 30 个官方入口，新增全国民法典、房地产管理法、信贷、公积金利率、登记费和经纪服务来源；后台定时调度尚未启用。",
+      "当前接入 57 个监测入口，覆盖全国与 12 城核心购房、贷款、公积金、特殊产权和本地房产税来源；后台定时调度尚未启用。",
     ],
     note: "高风险政策知识不自动发布，是为了避免官网布局变化、旧文案残留或解释文件更新造成错误结论。",
     keywords: ["实时更新", "监测", "6小时", "24小时", "pending_review", "新鲜度"],
@@ -877,5 +1515,14 @@ export const cityNames: Record<CityKey, string> = {
   beijing: "北京",
   shenzhen: "深圳",
   guangzhou: "广州",
+  shanghai: "上海",
+  tianjin: "天津",
+  wuhan: "武汉",
+  hangzhou: "杭州",
+  suzhou: "苏州",
+  chengdu: "成都",
+  chongqing: "重庆",
+  xian: "西安",
+  nanjing: "南京",
   common: "全国通则",
 };
