@@ -13,11 +13,11 @@ import {
 type FilterKey = CityKey | "all";
 
 const filterItems: { key: FilterKey; label: string; caption: string }[] = [
-  { key: "all", label: "总览", caption: "三城市与共同规则" },
+  { key: "all", label: "总览", caption: "全国通则 + 三城市" },
   { key: "beijing", label: "北京", caption: "五环内外" },
   { key: "shenzhen", label: "深圳", caption: "分区资格" },
   { key: "guangzhou", label: "广州", caption: "取消限购" },
-  { key: "common", label: "公共规则", caption: "税费、计算与版本" },
+  { key: "common", label: "全国通则", caption: "产权、合同、信贷与税费" },
 ];
 
 function searchableText(section: KnowledgeSection) {
@@ -276,7 +276,7 @@ export function KnowledgeExplorer() {
               ))}
               {!results.length ? (
                 <div className="empty-search">
-                  试试“非京籍”“新安街道”“满五唯一”“二套首付”或规则 ID。
+                  试试“抵押”“定金”“非京籍”“满五唯一”“二套首付”或规则 ID。
                 </div>
               ) : null}
             </div>
@@ -343,14 +343,14 @@ export function KnowledgeExplorer() {
           <section className="hero">
             <div className="hero-copy">
               <span className="overline">CITY TRANSACTION KNOWLEDGE BASE</span>
-              <h1>三个城市，<br />一套可追溯的购房判断。</h1>
+              <h1>全国通则，<br />叠加三个城市政策包。</h1>
               <p>
-                面向二手房购买决策，集中回答“能不能买、要准备多少钱、交多少税”。
-                每个结论保留规则、版本、计算口径和官方依据。
+                面向二手房购买决策，沉淀产权、合同、贷款、税费和城市资格知识。
+                每个结论保留规则、版本、适用层级和官方依据。
               </p>
             </div>
             <div className="hero-facts">
-              <div><strong>3</strong><span>试点城市</span></div>
+              <div><strong>1+3</strong><span>全国 + 城市包</span></div>
               <div><strong>{sections.length}</strong><span>知识主题</span></div>
               <div><strong>{knowledgeMeta.monitoredSources}</strong><span>官方入口</span></div>
               <div><strong>{knowledgeMeta.goldenCases}</strong><span>黄金用例</span></div>
@@ -380,7 +380,7 @@ export function KnowledgeExplorer() {
             <div className="section-intro">
               <span>城市政策包</span>
               <h2 id="city-heading">先选城市，再进入完整规则</h2>
-              <p>城市差异集中在资格地域、贷款最低首付和公积金政策；税收主体规则全国共用。</p>
+              <p>所有城市先应用全国通则；城市差异集中在资格地域、贷款最低首付、公积金和办理流程。</p>
             </div>
             <div className="city-grid">
               {cities.map((city) => (
@@ -430,7 +430,7 @@ export function KnowledgeExplorer() {
       <footer>
         <div>
           <strong>城市二手房交易知识库</strong>
-          <span>北京 · 深圳 · 广州</span>
+          <span>全国通则 · 北京 · 深圳 · 广州</span>
         </div>
         <div>
           <span>KB {knowledgeMeta.release}</span>
