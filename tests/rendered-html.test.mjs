@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { access, readFile } from "node:fs/promises";
+import { access, readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 
 const templateRoot = new URL("../", import.meta.url);
@@ -15,13 +15,15 @@ async function render() {
   );
 }
 
-test("server-renders the city transaction knowledge base", async () => {
+test("server-renders the property decision portal and transaction tab", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>全国与城市二手房交易知识库｜全国通则 \+ 12 城<\/title>/i);
+  assert.match(html, /<title>房产决策知识库｜交易政策 \+ 教育政策<\/title>/i);
+  assert.match(html, /交易政策/);
+  assert.match(html, /教育政策/);
   assert.match(html, /全国通则/);
   assert.match(html, /十二个城市政策包/);
   assert.match(html, /北京/);
@@ -39,17 +41,44 @@ test("server-renders the city transaction knowledge base", async () => {
 });
 
 test("removes starter preview assets and metadata", async () => {
-  const [page, layout, packageJson] = await Promise.all([
+  const [page, layout, packageJson, transactionExplorer] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
+    readFile(new URL("../app/knowledge-explorer.tsx", import.meta.url), "utf8"),
   ]);
 
-  assert.match(page, /KnowledgeExplorer/);
+  assert.match(page, /KnowledgePortal/);
   assert.match(layout, /lang="zh-CN"/);
+  assert.match(transactionExplorer, /toggleCityPackage/);
+  assert.match(transactionExplorer, /aria-expanded/);
+  assert.doesNotMatch(transactionExplorer, /selectFilter[\s\S]{0,180}window\.scrollTo/);
   assert.doesNotMatch(layout, /Starter Project|codex-preview/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
   await assert.rejects(access(new URL("../app/_sites-preview/SkeletonPreview.tsx", import.meta.url)));
   await assert.rejects(access(new URL("../app/_sites-preview/preview.css", import.meta.url)));
   await assert.rejects(access(new URL("public/_sites-preview", templateRoot)));
+});
+
+test("ships the supplied 31-city education knowledge base as lazy city packages", async () => {
+  const summary = JSON.parse(await readFile(new URL("../app/generated/education-summary.json", import.meta.url), "utf8"));
+  const educationFiles = (await readdir(new URL("../public/data/education", import.meta.url))).filter((name) => name.endsWith(".json"));
+
+  assert.equal(summary.validated, true);
+  assert.equal(summary.cities.length, 31);
+  assert.equal(educationFiles.length, 31);
+  assert.equal(summary.metrics.policyDocuments, 441);
+  assert.equal(summary.metrics.policyRules, 22038);
+  assert.equal(summary.metrics.schools, 9212);
+  assert.equal(summary.release, "edu-schema-v2@2026-07-16");
+
+  const beijingSummary = summary.cities.find((city) => city.name === "北京");
+  assert.ok(beijingSummary);
+  const beijing = JSON.parse(await readFile(new URL(`../public/data/education/${beijingSummary.code}.json`, import.meta.url), "utf8"));
+  assert.equal(beijing.policies.length, beijingSummary.metrics.policy_documents);
+  assert.equal(beijing.rules.length, beijingSummary.metrics.rules);
+  assert.equal(beijing.schools.length, beijingSummary.metrics.schools);
+  assert.match(beijing.policies[0].sourceUrl, /^https?:\/\//);
+  assert.ok(beijing.rules.every((rule) => rule.ruleText && rule.sourceLocator));
+  assert.ok(beijing.schools.every((school) => school.publicStatusEvidence && school.sourceUrl));
 });

@@ -9,6 +9,7 @@ import {
   type CityKey,
   type KnowledgeSection,
 } from "./knowledge-data";
+import { DomainTabs, type KnowledgeDomain } from "./domain-tabs";
 
 type FilterKey = CityKey | "all";
 
@@ -176,7 +177,11 @@ function SectionCard({ section }: { section: KnowledgeSection }) {
   );
 }
 
-export function KnowledgeExplorer() {
+export function TransactionExplorer({
+  onDomainChange,
+}: {
+  onDomainChange: (domain: KnowledgeDomain) => void;
+}) {
   const [filter, setFilter] = useState<FilterKey>("all");
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -222,7 +227,10 @@ export function KnowledgeExplorer() {
     setFilter(next);
     setQuery("");
     setSearchOpen(false);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const toggleCityPackage = (next: CityKey) => {
+    selectFilter(filter === next ? "all" : next);
   };
 
   const openResult = (section: KnowledgeSection) => {
@@ -243,10 +251,12 @@ export function KnowledgeExplorer() {
         <a className="brand" href="#top" onClick={() => selectFilter("all")}>
           <span className="brand-mark">房</span>
           <span>
-            <strong>城市交易知识库</strong>
-            <small>SECOND-HAND HOUSING KB</small>
+            <strong>房产决策知识库</strong>
+            <small>PROPERTY DECISION KB</small>
           </span>
         </a>
+
+        <DomainTabs active="transaction" onChange={onDomainChange} />
 
         <div className="search-shell" role="search">
           <span className="search-glyph" aria-hidden="true">⌕</span>
@@ -394,53 +404,77 @@ export function KnowledgeExplorer() {
             </div>
             <div className="city-grid">
               {cities.map((city) => (
-                <button
-                  className={`city-card ${filter === city.key ? "selected" : ""}`}
-                  key={city.key}
-                  onClick={() => selectFilter(city.key)}
-                  style={{ "--city-accent": city.accent } as React.CSSProperties}
-                >
-                  <div className="city-card-top">
-                    <span className="city-code">{city.code}</span>
-                    <span className="city-arrow">↗</span>
-                  </div>
-                  <h3>{city.name}</h3>
-                  <p>{city.status}</p>
-                  <dl>
-                    <div><dt>关键地域</dt><dd>{city.keyInput}</dd></div>
-                    <div><dt>商贷最低首付</dt><dd>{city.commercialDown}</dd></div>
-                    <div><dt>公积金最低首付</dt><dd>{city.providentDown}</dd></div>
-                  </dl>
-                  <div className="city-version">
-                    <code>{city.version}</code>
-                    <span>生效于 {city.effectiveFrom}</span>
-                  </div>
-                </button>
+                <Fragment key={city.key}>
+                  <button
+                    className={`city-card ${filter === city.key ? "selected" : ""}`}
+                    id={`city-card-${city.key}`}
+                    onClick={() => toggleCityPackage(city.key)}
+                    style={{ "--city-accent": city.accent } as React.CSSProperties}
+                    aria-expanded={filter === city.key}
+                    aria-controls={`city-package-${city.key}`}
+                  >
+                    <div className="city-card-top">
+                      <span className="city-code">{city.code}</span>
+                      <span className="city-arrow">{filter === city.key ? "×" : "↘"}</span>
+                    </div>
+                    <h3>{city.name}</h3>
+                    <p>{city.status}</p>
+                    <dl>
+                      <div><dt>关键地域</dt><dd>{city.keyInput}</dd></div>
+                      <div><dt>商贷最低首付</dt><dd>{city.commercialDown}</dd></div>
+                      <div><dt>公积金最低首付</dt><dd>{city.providentDown}</dd></div>
+                    </dl>
+                    <div className="city-version">
+                      <code>{city.version}</code>
+                      <span>生效于 {city.effectiveFrom}</span>
+                    </div>
+                  </button>
+
+                  {filter === city.key ? (
+                    <section className="city-package-expanded" id={`city-package-${city.key}`}>
+                      <div className="package-heading">
+                        <div>
+                          <span>已展开 · {city.name}知识库包</span>
+                          <h2>{city.name}二手房交易政策</h2>
+                          <p>{visibleSections.length} 个知识主题，沿用全国通则并叠加本地规则。</p>
+                        </div>
+                        <button onClick={() => selectFilter("all")}>收起知识包</button>
+                      </div>
+                      <div className="knowledge-stack">
+                        {visibleSections.map((section) => (
+                          <SectionCard section={section} key={section.id} />
+                        ))}
+                      </div>
+                    </section>
+                  ) : null}
+                </Fragment>
               ))}
             </div>
           </section>
 
-          <section className="knowledge-section" aria-labelledby="knowledge-heading">
-            <div className="section-intro section-intro-row">
-              <div>
-                <span>详细知识</span>
-                <h2 id="knowledge-heading">{selectedLabel}</h2>
+          {filter === "all" || filter === "common" ? (
+            <section className="knowledge-section" aria-labelledby="knowledge-heading">
+              <div className="section-intro section-intro-row">
+                <div>
+                  <span>详细知识</span>
+                  <h2 id="knowledge-heading">{selectedLabel}</h2>
+                </div>
+                <p>{visibleSections.length} 个主题 · 支持规则 ID 全文检索</p>
               </div>
-              <p>{visibleSections.length} 个主题 · 支持规则 ID 全文检索</p>
-            </div>
-            <div className="knowledge-stack">
-              {visibleSections.map((section) => (
-                <SectionCard section={section} key={section.id} />
-              ))}
-            </div>
-          </section>
+              <div className="knowledge-stack">
+                {visibleSections.map((section) => (
+                  <SectionCard section={section} key={section.id} />
+                ))}
+              </div>
+            </section>
+          ) : null}
         </main>
       </div>
 
       <footer>
         <div>
-          <strong>城市二手房交易知识库</strong>
-          <span>全国通则 · 12 个城市政策包</span>
+          <strong>房产决策知识库</strong>
+          <span>交易政策 · 全国通则 · 12 个城市政策包</span>
         </div>
         <div>
           <span>KB {knowledgeMeta.release}</span>

@@ -1,5 +1,5 @@
-import { KnowledgeExplorer } from "./knowledge-explorer";
+import { KnowledgePortal } from "./knowledge-portal";
 
 export default function Home() {
-  return <KnowledgeExplorer />;
+  return <KnowledgePortal />;
 }
