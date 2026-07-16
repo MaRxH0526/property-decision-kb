@@ -6,10 +6,10 @@
   "reviewStatus": "validated_snapshot",
   "coverage": {
     "executableRules": 70,
-    "cityEligibilityRules": 58,
-    "nationalRules": 12,
+    "cityEligibilityRules": 56,
+    "nationalRules": 14,
     "goldenCases": 348,
-    "validationAssertions": 4156
+    "validationAssertions": 4159
   },
   "scope": {
     "buyer": "natural_person",

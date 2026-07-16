@@ -37,6 +37,6 @@ npm run sync:decision
 node scripts/evaluate_transaction_decision.mjs scenario.json
 ```
 
-`sync:decision` 会依次重建 12 城规则包、生成 348 个黄金场景、执行一致性校验，并导出不含完整测试明细的轻量公网 JSON。当前发布共 70 条可执行规则，348 个场景通过 4,156 项断言。
+`sync:decision` 会依次重建 12 城规则包、生成 348 个黄金场景、执行一致性校验，并导出不含完整测试明细的轻量公网 JSON。当前发布共 70 条可执行规则，348 个场景通过 4,159 项断言。
 
 执行器只接受结构化事实，不从自然语言猜测计税价格、家庭套数或地方核定征收率。LLM 应先做意图识别和字段抽取，再调用规则执行器，并把 `missing_inputs` 转换成追问。

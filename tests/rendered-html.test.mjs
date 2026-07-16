@@ -35,7 +35,7 @@ test("server-renders the property decision portal and transaction tab", async ()
   assert.match(html, /南京/);
   assert.match(html, /2026\.07\.16-decision-r1/);
   assert.match(html, /12 城购房资格与精确税费规则已机器化/);
-  assert.match(html, /4,156 项断言/);
+  assert.match(html, /4,159 项断言/);
   assert.match(html, /签合同不等于已经取得房屋产权/);
   assert.match(html, /15% 是全国底线/);
   assert.match(html, /搜索城市、资格、税率、首付或规则 ID/);
@@ -51,7 +51,9 @@ test("ships the 12-city transaction decision package as lightweight public JSON"
   assert.equal(manifest.reviewStatus, "validated_snapshot");
   assert.equal(manifest.cityPackages.length, 12);
   assert.equal(manifest.coverage.executableRules, 70);
-  assert.equal(manifest.coverage.validationAssertions, 4156);
+  assert.equal(manifest.coverage.nationalRules, 14);
+  assert.equal(manifest.coverage.cityEligibilityRules, 56);
+  assert.equal(manifest.coverage.validationAssertions, 4159);
   assert.equal(cityFiles.length, 12);
   assert.equal(summary.case_count, 348);
   assert.equal(summary.city_counts.length, 12);

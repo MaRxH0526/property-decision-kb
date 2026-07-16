@@ -47,7 +47,7 @@ export const knowledgeMeta = {
   monitoredSources: 57,
   decisionRules: 70,
   goldenCases: 348,
-  validationAssertions: 4156,
+  validationAssertions: 4159,
 };
 
 export const cities = [
@@ -337,7 +337,7 @@ export const sections: KnowledgeSection[] = [
       "统一输出 eligible / ineligible / conditional / unknown / out_of_scope，并返回规则 ID、证据 ID、政策版本、缺失输入和逐项计算轨迹。",
       "全国税费包覆盖契税、增值税、附加、个人所得税、个人住房印花税和土地增值税；上海、重庆个人住房房产税单列为持有环节。",
       "只有主管税务机关接受的计税价格与必要参数完整时才给精确金额；地方核定个税率没有官方依据时强制追问，不统一猜成 1%。",
-      "已物化 348 个黄金场景，覆盖 12 城资格正反例、140㎡、满2年、满5年、套数上限、生效日前后和关键输入缺失，共通过 4,156 项断言。",
+      "已物化 348 个黄金场景，覆盖 12 城资格正反例、140㎡、满2年、满5年、套数上限、生效日前后和关键输入缺失，共通过 4,159 项断言。",
     ],
     formula: [
       "增值税（持有不足2年）= 税务计税价格 ÷ 1.03 × 3%",
@@ -353,7 +353,7 @@ export const sections: KnowledgeSection[] = [
       { title: "黄金场景覆盖摘要", url: "./data/transaction-decision/test-summary.json" },
     ],
     sources: nationalTaxSources,
-    keywords: ["决策规则", "精确税费", "机器可读", "JSON Schema", "Agent", "RAG", "348", "4156", "unknown", "out_of_scope"],
+    keywords: ["决策规则", "精确税费", "机器可读", "JSON Schema", "Agent", "RAG", "348", "4159", "unknown", "out_of_scope"],
   },
   {
     id: "bj-eligibility",

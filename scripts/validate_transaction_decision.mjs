@@ -26,6 +26,7 @@ const national = await load("national/tax-rules.json");
 const nationalEvidence = await load("national/evidence.json");
 check(manifest.cityPackages.length === 12, "manifest contains 12 city packages");
 check(manifest.release === "2026.07.16-decision-r1", "manifest release is fixed");
+check(manifest.coverage.nationalRules === national.rules.length, "manifest national rule count is derived from package");
 
 const globalRuleIds = new Set();
 for (const rule of national.rules) {
@@ -65,6 +66,8 @@ for (const cityEntry of manifest.cityPackages) {
     check(city.tax.assessed_iit.default_rate === null, `${cityEntry.name} unverified assessed IIT does not hard-code a rate`);
   }
 }
+check(manifest.coverage.cityEligibilityRules === globalRuleIds.size - national.rules.length, "manifest city rule count is derived from packages");
+check(manifest.coverage.executableRules === globalRuleIds.size, "manifest total rule count is derived from packages");
 
 const golden = await load("tests/golden-cases.json");
 check(golden.case_count === golden.cases.length, "golden case_count matches cases array");
