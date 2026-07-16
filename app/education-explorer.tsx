@@ -14,6 +14,7 @@ import type {
 } from "./education-types";
 
 const educationSummary = educationSummaryJson as unknown as EducationSummary;
+const publicBasePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 type EducationView = "policies" | "rules" | "timelines" | "schools" | "coverage";
 type StageFilter = "all" | "primary" | "junior";
@@ -223,7 +224,7 @@ export function EducationExplorer({
   useEffect(() => {
     if (!selectedCityCode || cache[selectedCityCode]) return;
     const controller = new AbortController();
-    fetch(`/data/education/${selectedCityCode}.json`, { signal: controller.signal })
+    fetch(`${publicBasePath}/data/education/${selectedCityCode}.json`, { signal: controller.signal })
       .then((response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.json() as Promise<EducationCityData>;
