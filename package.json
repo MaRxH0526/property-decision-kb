@@ -11,6 +11,8 @@
     "build:oss": "OSS_STATIC_EXPORT=1 next build",
     "build:pages": "GITHUB_PAGES=1 next build",
     "sync:education": "python3 scripts/export_education_web.py",
+    "sync:decision": "node scripts/build_transaction_decision_packages.mjs && node scripts/generate_transaction_golden_cases.mjs && node scripts/validate_transaction_decision.mjs && node scripts/export_transaction_decision_web.mjs",
+    "test:decision": "node scripts/validate_transaction_decision.mjs",
     "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
     "test": "npm run build && node --test tests/rendered-html.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",

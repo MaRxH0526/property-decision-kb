@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marxh.cn/schemas/transaction-rule.schema.json",
+  "title": "TransactionDecisionRule",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["rule_id", "jurisdiction", "decision_type", "priority", "required_inputs", "when", "result", "effective_from", "evidence_ids", "version", "review_status"],
+  "properties": {
+    "rule_id": { "type": "string", "pattern": "^[A-Z0-9-]+$" },
+    "jurisdiction": { "type": "string" },
+    "decision_type": { "enum": ["purchase_eligibility", "tax", "holding_tax", "scope_route"] },
+    "description": { "type": "string" },
+    "priority": { "type": "integer" },
+    "required_inputs": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "when": { "$ref": "#/$defs/expression" },
+    "result": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["eligible", "ineligible", "conditional", "unknown", "out_of_scope", "applies", "exempt"] },
+        "reason": { "type": "string" },
+        "tax_item": { "type": "string" },
+        "legal_taxpayer": { "type": "string" },
+        "formula": { "type": "string" },
+        "rate": { "type": ["number", "null"] }
+      }
+    },
+    "effective_from": { "type": "string", "format": "date" },
+    "effective_to": { "type": ["string", "null"], "format": "date" },
+    "evidence_ids": { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true },
+    "version": { "type": "string" },
+    "supersedes": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "review_status": { "enum": ["verified", "needs_review", "conflict", "expired"] }
+  },
+  "$defs": {
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field", "op"],
+      "properties": {
+        "field": { "type": "string" },
+        "op": { "enum": ["eq", "neq", "in", "not_in", "gt", "gte", "lt", "lte", "exists"] },
+        "value": {}
+      }
+    },
+    "expression": {
+      "oneOf": [
+        { "$ref": "#/$defs/condition" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["all"],
+          "properties": { "all": { "type": "array", "items": { "$ref": "#/$defs/expression" }, "minItems": 1 } }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["any"],
+          "properties": { "any": { "type": "array", "items": { "$ref": "#/$defs/expression" }, "minItems": 1 } }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["not"],
+          "properties": { "not": { "$ref": "#/$defs/expression" } }
+        }
+      ]
+    }
+  }
+}

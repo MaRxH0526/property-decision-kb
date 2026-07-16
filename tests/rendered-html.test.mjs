@@ -33,11 +33,29 @@ test("server-renders the property decision portal and transaction tab", async ()
   assert.match(html, /重庆/);
   assert.match(html, /西安/);
   assert.match(html, /南京/);
-  assert.match(html, /2026\.07\.15-r3/);
+  assert.match(html, /2026\.07\.16-decision-r1/);
+  assert.match(html, /12 城购房资格与精确税费规则已机器化/);
+  assert.match(html, /4,156 项断言/);
   assert.match(html, /签合同不等于已经取得房屋产权/);
   assert.match(html, /15% 是全国底线/);
   assert.match(html, /搜索城市、资格、税率、首付或规则 ID/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape|react-loading-skeleton/i);
+});
+
+test("ships the 12-city transaction decision package as lightweight public JSON", async () => {
+  const manifest = JSON.parse(await readFile(new URL("../public/data/transaction-decision/manifest.json", import.meta.url), "utf8"));
+  const summary = JSON.parse(await readFile(new URL("../public/data/transaction-decision/test-summary.json", import.meta.url), "utf8"));
+  const cityFiles = (await readdir(new URL("../public/data/transaction-decision/cities", import.meta.url))).filter((name) => name.endsWith(".json"));
+
+  assert.equal(manifest.release, "2026.07.16-decision-r1");
+  assert.equal(manifest.reviewStatus, "validated_snapshot");
+  assert.equal(manifest.cityPackages.length, 12);
+  assert.equal(manifest.coverage.executableRules, 70);
+  assert.equal(manifest.coverage.validationAssertions, 4156);
+  assert.equal(cityFiles.length, 12);
+  assert.equal(summary.case_count, 348);
+  assert.equal(summary.city_counts.length, 12);
+  await assert.rejects(access(new URL("../public/data/transaction-decision/tests/golden-cases.json", import.meta.url)));
 });
 
 test("removes starter preview assets and metadata", async () => {

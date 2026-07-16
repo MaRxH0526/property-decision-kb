@@ -34,17 +34,20 @@ export type KnowledgeSection = {
   formula?: string[];
   note?: string;
   sources?: KnowledgeSource[];
+  resources?: KnowledgeSource[];
   keywords?: string[];
 };
 
 export const knowledgeMeta = {
   title: "全国与城市二手房交易知识库",
-  release: "2026.07.15-r3",
-  schemaVersion: "1.4.0",
-  asOfDate: "2026-07-15",
-  monitoringStatus: "baseline_pending",
+  release: "2026.07.16-decision-r1",
+  schemaVersion: "2.0.0",
+  asOfDate: "2026-07-16",
+  monitoringStatus: "validated_snapshot",
   monitoredSources: 57,
-  goldenCases: 47,
+  decisionRules: 70,
+  goldenCases: 348,
+  validationAssertions: 4156,
 };
 
 export const cities = [
@@ -306,6 +309,52 @@ const nanjingSources: KnowledgeSource[] = [
 ];
 
 export const sections: KnowledgeSection[] = [
+  {
+    id: "common-decision-package",
+    city: "common",
+    category: "决策规则包",
+    title: "12 城购房资格与精确税费规则已机器化",
+    summary: "叙述性政策之外，新增可供 AI、Agent 和规则执行器直接读取的 JSON 决策包；资格、税费、缺失输入、证据和版本均可追溯。",
+    table: {
+      headers: ["城市", "资格结构", "城市资格规则", "核定个税默认率", "决策包版本"],
+      rows: [
+        ["北京", "五环内外 + 户籍/工作居住证 + 社保个税 + 多子女", "13 条", "需主管税务机关确认", "bj@2025-12-26.decision.1"],
+        ["深圳", "核心区 / 放宽区 / 无审核区 + 居住证", "12 条", "1%（广东规则）", "sz@2026-04-30.decision.1"],
+        ["广州", "居民普通商品住房取消普遍限购", "2 条", "1%（广东规则）", "gz@2024-09-30.decision.1"],
+        ["上海", "外环内外 + 户籍 + 社保个税 + 居住证年限", "13 条", "1%（上海税务）", "sh@2026-02-26.decision.1"],
+        ["天津", "居民普通商品住房取消普遍限购", "2 条", "需主管税务机关确认", "tj@2024-10-16.decision.1"],
+        ["武汉", "居民普通商品住房取消普遍限购", "2 条", "需主管税务机关确认", "wh@2023-09-19.decision.1"],
+        ["杭州", "居民普通商品住房取消普遍限购", "2 条", "需主管税务机关确认", "hz@2024-05-09.decision.1"],
+        ["苏州", "居民普通商品住房取消普遍限购", "2 条", "需主管税务机关确认", "su@2024-01-01.decision.1"],
+        ["成都", "居民普通商品住房取消普遍限购", "2 条", "需主管税务机关确认", "cd@2024-04-29.decision.1"],
+        ["重庆", "普通商品住房一般路径 + 持有房产税分流", "2 条", "需主管税务机关确认", "cq@2024-09-01.decision.1"],
+        ["西安", "居民普通商品住房取消普遍限购", "2 条", "需主管税务机关确认", "xa@2024-05-09.decision.1"],
+        ["南京", "普通商品住房一般路径 + 保障房分流", "2 条", "需主管税务机关确认", "nj@2023-09-08.decision.1"],
+      ],
+    },
+    details: [
+      "统一输入 Schema 区分城市/区域、家庭资格套数、契税家庭套数、房屋面积与性质、卖方持有年限、三种价格和税费承担约定。",
+      "统一输出 eligible / ineligible / conditional / unknown / out_of_scope，并返回规则 ID、证据 ID、政策版本、缺失输入和逐项计算轨迹。",
+      "全国税费包覆盖契税、增值税、附加、个人所得税、个人住房印花税和土地增值税；上海、重庆个人住房房产税单列为持有环节。",
+      "只有主管税务机关接受的计税价格与必要参数完整时才给精确金额；地方核定个税率没有官方依据时强制追问，不统一猜成 1%。",
+      "已物化 348 个黄金场景，覆盖 12 城资格正反例、140㎡、满2年、满5年、套数上限、生效日前后和关键输入缺失，共通过 4,156 项断言。",
+    ],
+    formula: [
+      "增值税（持有不足2年）= 税务计税价格 ÷ 1.03 × 3%",
+      "核实个税 = max(0, 不含增值税收入 − 原值 − 可扣税金 − 合理费用) × 20%",
+      "买方交易现金税费 = 买方本人税费 + 合同明确由买方承担的卖方税费",
+    ],
+    note: "网页仍是知识展示与轻量检索，不提供交互计算器；Agent 应读取机器包并在输入不足时追问。",
+    resources: [
+      { title: "机器可读发布清单 manifest.json", url: "./data/transaction-decision/manifest.json" },
+      { title: "场景输入 JSON Schema", url: "./data/transaction-decision/schemas/scenario.schema.json" },
+      { title: "规则 JSON Schema", url: "./data/transaction-decision/schemas/rule.schema.json" },
+      { title: "输出 JSON Schema", url: "./data/transaction-decision/schemas/evaluation.schema.json" },
+      { title: "黄金场景覆盖摘要", url: "./data/transaction-decision/test-summary.json" },
+    ],
+    sources: nationalTaxSources,
+    keywords: ["决策规则", "精确税费", "机器可读", "JSON Schema", "Agent", "RAG", "348", "4156", "unknown", "out_of_scope"],
+  },
   {
     id: "bj-eligibility",
     city: "beijing",
@@ -1215,12 +1264,12 @@ export const sections: KnowledgeSection[] = [
     },
     details: [
       "未指定城市时，全国知识只能回答真正通用的部分；购房资格应返回 unknown 并追问城市、区域和房屋性质。",
-      "全国知识包版本为 cn@2026-07-15.1；12 个城市分别保留自己的政策包版本和知识形态。",
-      "全国知识包是 2026-07-15 的已审核快照，各条规则仍按自身生效日期查询，不能把快照日期当作所有法律的生效日。",
+      "全国知识包版本为 cn-tax@2026-07-16.1；12 个城市分别保留自己的政策包版本和知识形态。",
+      "全国知识包是 2026-07-16 的已审核快照，各条规则仍按自身生效日期查询，不能把快照日期当作所有法律的生效日。",
     ],
     note: "优先级：国家法律和全国政策底线 → 城市现行规则 → 机构对本案的正式审核。",
     sources: [...nationalPropertySources, ...nationalFinanceSources, ...nationalTaxSources],
-    keywords: ["全国通则", "城市覆盖", "优先级", "全国知识包", "cn@2026-07-15.1"],
+    keywords: ["全国通则", "城市覆盖", "优先级", "全国知识包", "cn-tax@2026-07-16.1"],
   },
   {
     id: "common-title-transfer",
@@ -1458,7 +1507,7 @@ export const sections: KnowledgeSection[] = [
     table: {
       headers: ["范围", "历史版本", "当前版本", "切换日期"],
       rows: [
-        ["全国通则", "未物化完整历史包", "cn@2026-07-15.1", "2026-07-15 知识快照"],
+        ["全国通则", "物化现行税费规则；完整历史包仍待扩展", "cn-tax@2026-07-16.1", "2026-07-16 决策快照"],
         ["北京", "bj@2025-08-09.1", "bj@2025-12-24.1", "2025-12-24"],
         ["深圳", "sz@2025-09-06.1", "sz@2026-04-30.1", "2026-04-30"],
         ["广州", "gz@2024-05-29.1", "gz@2024-09-30.1", "2024-09-30"],
@@ -1481,7 +1530,7 @@ export const sections: KnowledgeSection[] = [
       "查询日期早于已登记覆盖范围时返回 unknown，不用现行规则倒推。",
       "全国知识包日期是知识快照，不是民法典、登记费或信贷政策共同的生效日；每个规则族保留自身有效区间。",
       "城市政策包没有因本次全国补全而伪造新生效日；全国与共享知识族独立增加版本。",
-      "一次发布使用 kb_release 整体回滚；当前发布为 2026.07.15-r3。",
+      "一次发布使用 kb_release 整体回滚；当前发布为 2026.07.16-decision-r1。",
     ],
     keywords: ["版本", "历史政策", "effective_from", "回滚", "政策演变"],
   },

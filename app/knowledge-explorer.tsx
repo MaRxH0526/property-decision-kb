@@ -43,6 +43,7 @@ function searchableText(section: KnowledgeSection) {
     ...(section.table?.headers ?? []),
     ...(section.table?.rows.flat() ?? []),
     ...(section.sources?.flatMap((source) => [source.title, source.url]) ?? []),
+    ...(section.resources?.flatMap((resource) => [resource.title, resource.url]) ?? []),
   ]
     .join(" ")
     .toLocaleLowerCase("zh-CN");
@@ -168,6 +169,19 @@ function SectionCard({ section }: { section: KnowledgeSection }) {
             {section.sources.map((source) => (
               <a href={source.url} key={source.url} target="_blank" rel="noreferrer">
                 {source.title}<b aria-hidden="true">↗</b>
+              </a>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {section.resources?.length ? (
+        <div className="source-list resource-list">
+          <span>机器可读</span>
+          <div>
+            {section.resources.map((resource) => (
+              <a href={resource.url} key={resource.url} target="_blank" rel="noreferrer">
+                {resource.title}<b aria-hidden="true">↗</b>
               </a>
             ))}
           </div>
@@ -371,9 +385,9 @@ export function TransactionExplorer({
             </div>
             <div className="hero-facts">
               <div><strong>1+12</strong><span>全国 + 城市包</span></div>
-              <div><strong>{sections.length}</strong><span>知识主题</span></div>
-              <div><strong>{knowledgeMeta.monitoredSources}</strong><span>官方入口</span></div>
+              <div><strong>{knowledgeMeta.decisionRules}</strong><span>可执行规则</span></div>
               <div><strong>{knowledgeMeta.goldenCases}</strong><span>黄金用例</span></div>
+              <div><strong>{knowledgeMeta.validationAssertions}</strong><span>通过断言</span></div>
             </div>
           </section>
 
@@ -389,11 +403,11 @@ export function TransactionExplorer({
               <strong>{knowledgeMeta.schemaVersion}</strong>
             </div>
             <div>
-              <span className="status-dot status-dot-warn" />
-              <span>来源监测</span>
-              <strong>baseline pending</strong>
+              <span className="status-dot status-dot-good" />
+              <span>规则验证</span>
+              <strong>{knowledgeMeta.validationAssertions} passed</strong>
             </div>
-            <p>政策辅助判断，不替代住建、税务、银行或登记机构正式核验。</p>
+            <p>人工核验快照；远端自动监测基线仍待建立。政策辅助判断不替代主管机构正式核验。</p>
           </div>
 
           <section className="city-section" aria-labelledby="city-heading">

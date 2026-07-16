@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marxh.cn/schemas/transaction-scenario.schema.json",
+  "title": "TransactionDecisionScenario",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["query_date", "city_code", "buyer", "property", "seller", "prices", "agreement"],
+  "properties": {
+    "query_date": { "type": "string", "format": "date" },
+    "city_code": { "type": "string", "pattern": "^[0-9]{6}$" },
+    "district_code": { "type": ["string", "null"] },
+    "district_name": { "type": ["string", "null"] },
+    "street_name": { "type": ["string", "null"] },
+    "buyer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subject_type", "residency_type", "household_kind", "minor_children_count"],
+      "properties": {
+        "subject_type": { "enum": ["natural_person", "enterprise", "other"] },
+        "residency_type": { "enum": ["local_hukou", "nonlocal_hukou", "hk_macao_taiwan_overseas_chinese", "foreign_national", "unknown"] },
+        "household_kind": { "enum": ["family", "adult_single", "unknown"] },
+        "minor_children_count": { "type": ["integer", "null"], "minimum": 0 },
+        "local_work_residence_permit_valid": { "type": ["boolean", "null"] },
+        "local_residence_permit_valid": { "type": ["boolean", "null"] },
+        "local_residence_permit_years": { "type": ["number", "null"], "minimum": 0 },
+        "continuous_social_tax_months": { "type": ["integer", "null"], "minimum": 0 },
+        "eligible_work_or_study_status": { "type": ["boolean", "null"] },
+        "housing_count_city": { "type": ["integer", "null"], "minimum": 0 },
+        "housing_count_target_zone": { "type": ["integer", "null"], "minimum": 0 },
+        "housing_count_deed_tax_family": { "type": ["integer", "null"], "minimum": 0 }
+      }
+    },
+    "property": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["transaction_type", "usage", "ownership_type", "area_sqm"],
+      "properties": {
+        "transaction_type": { "enum": ["second_hand_sale", "gift", "inheritance", "judicial_auction", "other"] },
+        "usage": { "enum": ["residential", "non_residential", "unknown"] },
+        "ownership_type": { "enum": ["ordinary_commodity_housing", "policy_housing", "public_housing_use_right", "rural_collective", "unknown"] },
+        "area_sqm": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+        "zone": { "type": ["string", "null"], "enum": ["inside_fifth_ring", "outside_fifth_ring", "shenzhen_core", "shenzhen_relaxed", "shenzhen_no_review", "inside_shanghai_outer_ring", "outside_shanghai_outer_ring", "other", null] },
+        "is_high_end_housing": { "type": ["boolean", "null"] },
+        "is_detached_house": { "type": ["boolean", "null"] }
+      }
+    },
+    "seller": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subject_type"],
+      "properties": {
+        "subject_type": { "enum": ["natural_person", "enterprise", "other"] },
+        "holding_years": { "type": ["number", "null"], "minimum": 0 },
+        "family_only_home_in_required_scope": { "type": ["boolean", "null"] },
+        "original_value": { "type": ["number", "null"], "minimum": 0 },
+        "deductible_taxes": { "type": ["number", "null"], "minimum": 0 },
+        "reasonable_expenses": { "type": ["number", "null"], "minimum": 0 },
+        "iit_method": { "enum": ["verified", "assessed", "unknown"] },
+        "iit_assessed_rate": { "type": ["number", "null"], "minimum": 0, "maximum": 0.03 },
+        "is_vat_small_scale_taxpayer": { "type": ["boolean", "null"] },
+        "urban_maintenance_tax_rate": { "type": ["number", "null"], "enum": [0.07, 0.05, 0.01, null] }
+      }
+    },
+    "prices": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_price", "taxable_transfer_price"],
+      "properties": {
+        "listing_price": { "type": ["number", "null"], "minimum": 0 },
+        "contract_price": { "type": ["number", "null"], "minimum": 0 },
+        "taxable_transfer_price": { "type": ["number", "null"], "minimum": 0 },
+        "bank_appraisal_price": { "type": ["number", "null"], "minimum": 0 }
+      }
+    },
+    "agreement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["buyer_bears_seller_taxes"],
+      "properties": {
+        "buyer_bears_seller_taxes": { "type": ["boolean", "null"] }
+      }
+    }
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "package_version": "hz@2024-05-09.decision.1",
+  "knowledge_release": "2026.07.16-decision-r1",
+  "as_of_date": "2026-07-16",
+  "city": {
+    "code": "330100",
+    "name": "杭州"
+  },
+  "scope": {
+    "subject": "mainland_natural_person_household",
+    "property": "ordinary_second_hand_commodity_residential_housing",
+    "special_routes": [
+      "hk_macao_taiwan_overseas_chinese",
+      "foreign_national",
+      "policy_housing"
+    ]
+  },
+  "evidence": [
+    {
+      "evidence_id": "HZ-EVID-ELIG-2024",
+      "title": "杭州全面取消住房限购政策",
+      "url": "https://www.hzarchives.org.cn/info/12166",
+      "authority": "杭州市档案馆政策发布存档",
+      "clause_summary": "在杭州市范围内购买住房不再审核购房资格",
+      "effective_from": "2024-05-09",
+      "review_status": "verified"
+    }
+  ],
+  "purchase_eligibility": {
+    "decision_model": "unrestricted",
+    "rules": [
+      {
+        "rule_id": "HZ-ELIG-OVERSEAS-ROUTE",
+        "jurisdiction": "330100",
+        "decision_type": "purchase_eligibility",
+        "description": "境外个人及港澳台侨购房进入专门核验路径",
+        "priority": 900,
+        "required_inputs": [
+          "buyer.residency_type"
+        ],
+        "when": {
+          "field": "buyer.residency_type",
+          "op": "in",
+          "value": [
+            "hk_macao_taiwan_overseas_chinese",
+            "foreign_national"
+          ]
+        },
+        "result": {
+          "status": "conditional",
+          "reason": "需核验境内工作或学习、居留、自用目的及当地不动产登记材料，不能套用居民家庭规则"
+        },
+        "effective_from": "2024-05-09",
+        "effective_to": null,
+        "evidence_ids": [
+          "HZ-EVID-ELIG-2024"
+        ],
+        "version": "HZ-ELIG-OVERSEAS-ROUTE@2024-05-09.1",
+        "supersedes": [],
+        "review_status": "needs_review"
+      },
+      {
+        "rule_id": "HZ-ELIG-001",
+        "jurisdiction": "330100",
+        "decision_type": "purchase_eligibility",
+        "description": "境内居民购买普通二手商品住房不再进行普遍限购资格审核",
+        "priority": 500,
+        "required_inputs": [
+          "buyer.residency_type"
+        ],
+        "when": {
+          "field": "buyer.residency_type",
+          "op": "in",
+          "value": [
+            "local_hukou",
+            "nonlocal_hukou"
+          ]
+        },
+        "result": {
+          "status": "eligible",
+          "reason": "现行政策已取消普通商品住房普遍限购；本结论不代表房屋可交易性或贷款获批"
+        },
+        "effective_from": "2024-05-09",
+        "effective_to": null,
+        "evidence_ids": [
+          "HZ-EVID-ELIG-2024"
+        ],
+        "version": "HZ-ELIG-001@2024-05-09.1",
+        "supersedes": [],
+        "review_status": "verified"
+      }
+    ],
+    "unknown_policy": "任一命中规则的 required_inputs 缺失，或不存在完整匹配规则时返回 unknown 并列出缺失字段。"
+  },
+  "tax": {
+    "inherits": "cn-tax@2026-07-16.1",
+    "unique_home_verification_scope": "浙江省",
+    "assessed_iit": {
+      "default_rate": null,
+      "status": "authority_confirmation_required",
+      "evidence_ids": [],
+      "missing_behavior": "必须输入经主管税务机关确认的 seller.iit_assessed_rate，否则个税金额为 unknown"
+    },
+    "vat_surcharge": {
+      "small_scale_reduction_factor": 0.5,
+      "status": "subject_confirmation_required",
+      "missing_behavior": "必须确认卖方是否适用增值税小规模纳税人六税两费减半政策及城建税税率"
+    },
+    "holding_tax": {
+      "status": "not_configured_for_ordinary_resale",
+      "included_in_closing_tax_total": false
+    }
+  },
+  "boundaries": [
+    "购房资格不等于房屋具备转让条件，也不等于银行同意贷款。",
+    "计税价格必须使用主管税务机关接受的 taxable_transfer_price。",
+    "政策性住房、共有产权、房改房、保障性住房等不适用普通商品住房规则。",
+    "执行器按 query_date 选择有效规则；政策冲突或证据待复核时返回 unknown/conditional。"
+  ]
+}

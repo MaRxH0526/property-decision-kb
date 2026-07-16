@@ -1,0 +1,667 @@
+{
+  "package_version": "sh@2026-02-26.decision.1",
+  "knowledge_release": "2026.07.16-decision-r1",
+  "as_of_date": "2026-07-16",
+  "city": {
+    "code": "310000",
+    "name": "上海"
+  },
+  "scope": {
+    "subject": "mainland_natural_person_household",
+    "property": "ordinary_second_hand_commodity_residential_housing",
+    "special_routes": [
+      "hk_macao_taiwan_overseas_chinese",
+      "foreign_national",
+      "policy_housing"
+    ]
+  },
+  "evidence": [
+    {
+      "evidence_id": "SH-EVID-ELIG-2026",
+      "title": "关于进一步优化调整本市房地产政策的通知",
+      "url": "https://www.shanghai.gov.cn/nw31406/20260227/961ca351f504470f90ff4d3d001bb613.html",
+      "authority": "上海市人民政府",
+      "clause_summary": "外环内外、沪籍和非沪籍社保个税年限、居住证满五年购房规则",
+      "effective_from": "2026-02-26",
+      "review_status": "verified"
+    },
+    {
+      "evidence_id": "SH-EVID-TAX-GE2",
+      "title": "个人转让购买满2年住房涉税事项",
+      "url": "https://shanghai.chinatax.gov.cn/tax/xwdt/ztzl/grsx/fwjy/csfclsx/202411/t474237.html",
+      "authority": "国家税务总局上海市税务局",
+      "clause_summary": "满2年增值税免征、个税核实20%及核定1%",
+      "effective_from": "2024-12-01",
+      "review_status": "verified"
+    }
+  ],
+  "purchase_eligibility": {
+    "decision_model": "shanghai",
+    "rules": [
+      {
+        "rule_id": "SH-ELIG-OVERSEAS-ROUTE",
+        "jurisdiction": "310000",
+        "decision_type": "purchase_eligibility",
+        "description": "境外个人及港澳台侨购房进入专门核验路径",
+        "priority": 900,
+        "required_inputs": [
+          "buyer.residency_type"
+        ],
+        "when": {
+          "field": "buyer.residency_type",
+          "op": "in",
+          "value": [
+            "hk_macao_taiwan_overseas_chinese",
+            "foreign_national"
+          ]
+        },
+        "result": {
+          "status": "conditional",
+          "reason": "需核验境内工作或学习、居留、自用目的及当地不动产登记材料，不能套用居民家庭规则"
+        },
+        "effective_from": "2026-02-26",
+        "effective_to": null,
+        "evidence_ids": [
+          "SH-EVID-ELIG-2026"
+        ],
+        "version": "SH-ELIG-OVERSEAS-ROUTE@2026-02-26.1",
+        "supersedes": [],
+        "review_status": "needs_review"
+      },
+      {
+        "rule_id": "SH-ELIG-OUT-LOCAL",
+        "jurisdiction": "310000",
+        "decision_type": "purchase_eligibility",
+        "description": "沪籍外环外不限套数",
+        "priority": 850,
+        "required_inputs": [
+          "property.zone",
+          "buyer.residency_type"
+        ],
+        "when": {
+          "all": [
+            {
+              "field": "property.zone",
+              "op": "eq",
+              "value": "outside_shanghai_outer_ring"
+            },
+            {
+              "field": "buyer.residency_type",
+              "op": "eq",
+              "value": "local_hukou"
+            }
+          ]
+        },
+        "result": {
+          "status": "eligible",
+          "reason": "沪籍居民家庭或成年单身人士购买外环外住房不限套数"
+        },
+        "effective_from": "2026-02-26",
+        "effective_to": null,
+        "evidence_ids": [
+          "SH-EVID-ELIG-2026"
+        ],
+        "version": "SH-ELIG-OUT-LOCAL@2026-02-26.1",
+        "supersedes": [],
+        "review_status": "verified"
+      },
+      {
+        "rule_id": "SH-ELIG-IN-LOCAL-YES",
+        "jurisdiction": "310000",
+        "decision_type": "purchase_eligibility",
+        "description": "沪籍外环内最多两套",
+        "priority": 845,
+        "required_inputs": [
+          "property.zone",
+          "buyer.residency_type",
+          "buyer.housing_count_target_zone"
+        ],
+        "when": {
+          "all": [
+            {
+              "field": "property.zone",
+              "op": "eq",
+              "value": "inside_shanghai_outer_ring"
+            },
+            {
+              "field": "buyer.residency_type",
+              "op": "eq",
+              "value": "local_hukou"
+            },
+            {
+              "field": "buyer.housing_count_target_zone",
+              "op": "lt",
+              "value": 2
+            }
+          ]
+        },
+        "result": {
+          "status": "eligible",
+          "reason": "沪籍家庭外环内住房套数未达到两套上限"
+        },
+        "effective_from": "2026-02-26",
+        "effective_to": null,
+        "evidence_ids": [
+          "SH-EVID-ELIG-2026"
+        ],
+        "version": "SH-ELIG-IN-LOCAL-YES@2026-02-26.1",
+        "supersedes": [],
+        "review_status": "verified"
+      },
+      {
+        "rule_id": "SH-ELIG-IN-LOCAL-NO",
+        "jurisdiction": "310000",
+        "decision_type": "purchase_eligibility",
+        "description": "沪籍外环内已达两套",
+        "priority": 840,
+        "required_inputs": [
+          "property.zone",
+          "buyer.residency_type",
+          "buyer.housing_count_target_zone"
+        ],
+        "when": {
+          "all": [
+            {
+              "field": "property.zone",
+              "op": "eq",
+              "value": "inside_shanghai_outer_ring"
+            },
+            {
+              "field": "buyer.residency_type",
+              "op": "eq",
+              "value": "local_hukou"
+            },
+            {
+              "field": "buyer.housing_count_target_zone",
+              "op": "gte",
+              "value": 2
+            }
+          ]
+        },
+        "result": {
+          "status": "ineligible",
+          "reason": "沪籍家庭外环内住房套数已达到两套上限"
+        },
+        "effective_from": "2026-02-26",
+        "effective_to": null,
+        "evidence_ids": [
+          "SH-EVID-ELIG-2026"
+        ],
+        "version": "SH-ELIG-IN-LOCAL-NO@2026-02-26.1",
+        "supersedes": [],
+        "review_status": "verified"
+      },
+      {
+        "rule_id": "SH-ELIG-IN-NONLOCAL-3Y-YES",
+        "jurisdiction": "310000",
+        "decision_type": "purchase_eligibility",
+        "description": "非沪籍满三年外环内最多两套",
+        "priority": 835,
+        "required_inputs": [
+          "property.zone",
+          "buyer.residency_type",
+          "buyer.continuous_social_tax_months",
+          "buyer.housing_count_target_zone"
+        ],
+        "when": {
+          "all": [
+            {
+              "field": "property.zone",
+              "op": "eq",
+              "value": "inside_shanghai_outer_ring"
+            },
+            {
+              "field": "buyer.residency_type",
+              "op": "eq",
+              "value": "nonlocal_hukou"
+            },
+            {
+              "field": "buyer.continuous_social_tax_months",
+              "op": "gte",
+              "value": 36
+            },
+            {
+              "field": "buyer.housing_count_target_zone",
+              "op": "lt",
+              "value": 2
+            }
+          ]
+        },
+        "result": {
+          "status": "eligible",
+          "reason": "非沪籍连续社保或个税满三年且外环内住房套数未达两套"
+        },
+        "effective_from": "2026-02-26",
+        "effective_to": null,
+        "evidence_ids": [
+          "SH-EVID-ELIG-2026"
+        ],
+        "version": "SH-ELIG-IN-NONLOCAL-3Y-YES@2026-02-26.1",
+        "supersedes": [],
+        "review_status": "verified"
+      },
+      {
+        "rule_id": "SH-ELIG-IN-NONLOCAL-3Y-NO",
+        "jurisdiction": "310000",
+        "decision_type": "purchase_eligibility",
+        "description": "非沪籍满三年外环内已达两套",
+        "priority": 830,
+        "required_inputs": [
+          "property.zone",
+          "buyer.residency_type",
+          "buyer.continuous_social_tax_months",
+          "buyer.housing_count_target_zone"
+        ],
+        "when": {
+          "all": [
+            {
+              "field": "property.zone",
+              "op": "eq",
+              "value": "inside_shanghai_outer_ring"
+            },
+            {
+              "field": "buyer.residency_type",
+              "op": "eq",
+              "value": "nonlocal_hukou"
+            },
+            {
+              "field": "buyer.continuous_social_tax_months",
+              "op": "gte",
+              "value": 36
+            },
+            {
+              "field": "buyer.housing_count_target_zone",
+              "op": "gte",
+              "value": 2
+            }
+          ]
+        },
+        "result": {
+          "status": "ineligible",
+          "reason": "非沪籍满三年路径已达到外环内两套上限"
+        },
+        "effective_from": "2026-02-26",
+        "effective_to": null,
+        "evidence_ids": [
+          "SH-EVID-ELIG-2026"
+        ],
+        "version": "SH-ELIG-IN-NONLOCAL-3Y-NO@2026-02-26.1",
+        "supersedes": [],
+        "review_status": "verified"
+      },
+      {
+        "rule_id": "SH-ELIG-IN-NONLOCAL-1Y-YES",
+        "jurisdiction": "310000",
+        "decision_type": "purchase_eligibility",
+        "description": "非沪籍满一年不足三年外环内最多一套",
+        "priority": 825,
+        "required_inputs": [
+          "property.zone",
+          "buyer.residency_type",
+          "buyer.continuous_social_tax_months",
+          "buyer.housing_count_target_zone"
+        ],
+        "when": {
+          "all": [
+            {
+              "field": "property.zone",
+              "op": "eq",
+              "value": "inside_shanghai_outer_ring"
+            },
+            {
+              "field": "buyer.residency_type",
+              "op": "eq",
+              "value": "nonlocal_hukou"
+            },
+            {
+              "field": "buyer.continuous_social_tax_months",
+              "op": "gte",
+              "value": 12
+            },
+            {
+              "field": "buyer.continuous_social_tax_months",
+              "op": "lt",
+              "value": 36
+            },
+            {
+              "field": "buyer.housing_count_target_zone",
+              "op": "lt",
+              "value": 1
+            }
+          ]
+        },
+        "result": {
+          "status": "eligible",
+          "reason": "非沪籍连续社保或个税满一年不足三年且外环内无房"
+        },
+        "effective_from": "2026-02-26",
+        "effective_to": null,
+        "evidence_ids": [
+          "SH-EVID-ELIG-2026"
+        ],
+        "version": "SH-ELIG-IN-NONLOCAL-1Y-YES@2026-02-26.1",
+        "supersedes": [],
+        "review_status": "verified"
+      },
+      {
+        "rule_id": "SH-ELIG-IN-NONLOCAL-1Y-NO",
+        "jurisdiction": "310000",
+        "decision_type": "purchase_eligibility",
+        "description": "非沪籍满一年不足三年外环内已有一套",
+        "priority": 820,
+        "required_inputs": [
+          "property.zone",
+          "buyer.residency_type",
+          "buyer.continuous_social_tax_months",
+          "buyer.housing_count_target_zone"
+        ],
+        "when": {
+          "all": [
+            {
+              "field": "property.zone",
+              "op": "eq",
+              "value": "inside_shanghai_outer_ring"
+            },
+            {
+              "field": "buyer.residency_type",
+              "op": "eq",
+              "value": "nonlocal_hukou"
+            },
+            {
+              "field": "buyer.continuous_social_tax_months",
+              "op": "gte",
+              "value": 12
+            },
+            {
+              "field": "buyer.continuous_social_tax_months",
+              "op": "lt",
+              "value": 36
+            },
+            {
+              "field": "buyer.housing_count_target_zone",
+              "op": "gte",
+              "value": 1
+            }
+          ]
+        },
+        "result": {
+          "status": "ineligible",
+          "reason": "非沪籍满一年不足三年路径已达到外环内一套上限"
+        },
+        "effective_from": "2026-02-26",
+        "effective_to": null,
+        "evidence_ids": [
+          "SH-EVID-ELIG-2026"
+        ],
+        "version": "SH-ELIG-IN-NONLOCAL-1Y-NO@2026-02-26.1",
+        "supersedes": [],
+        "review_status": "verified"
+      },
+      {
+        "rule_id": "SH-ELIG-OUT-NONLOCAL-YES",
+        "jurisdiction": "310000",
+        "decision_type": "purchase_eligibility",
+        "description": "非沪籍满一年外环外不限套数",
+        "priority": 815,
+        "required_inputs": [
+          "property.zone",
+          "buyer.residency_type",
+          "buyer.continuous_social_tax_months"
+        ],
+        "when": {
+          "all": [
+            {
+              "field": "property.zone",
+              "op": "eq",
+              "value": "outside_shanghai_outer_ring"
+            },
+            {
+              "field": "buyer.residency_type",
+              "op": "eq",
+              "value": "nonlocal_hukou"
+            },
+            {
+              "field": "buyer.continuous_social_tax_months",
+              "op": "gte",
+              "value": 12
+            }
+          ]
+        },
+        "result": {
+          "status": "eligible",
+          "reason": "非沪籍连续社保或个税满一年，购买外环外住房不限套数"
+        },
+        "effective_from": "2026-02-26",
+        "effective_to": null,
+        "evidence_ids": [
+          "SH-EVID-ELIG-2026"
+        ],
+        "version": "SH-ELIG-OUT-NONLOCAL-YES@2026-02-26.1",
+        "supersedes": [],
+        "review_status": "verified"
+      },
+      {
+        "rule_id": "SH-ELIG-PERMIT5-YES",
+        "jurisdiction": "310000",
+        "decision_type": "purchase_eligibility",
+        "description": "非沪籍居住证满五年全市最多一套",
+        "priority": 810,
+        "required_inputs": [
+          "buyer.residency_type",
+          "buyer.local_residence_permit_years",
+          "buyer.housing_count_target_zone"
+        ],
+        "when": {
+          "all": [
+            {
+              "field": "buyer.residency_type",
+              "op": "eq",
+              "value": "nonlocal_hukou"
+            },
+            {
+              "field": "buyer.local_residence_permit_years",
+              "op": "gte",
+              "value": 5
+            },
+            {
+              "field": "buyer.housing_count_target_zone",
+              "op": "lt",
+              "value": 1
+            }
+          ]
+        },
+        "result": {
+          "status": "eligible",
+          "reason": "上海居住证满五年可在全市购买一套住房且不要求社保或个税"
+        },
+        "effective_from": "2026-02-26",
+        "effective_to": null,
+        "evidence_ids": [
+          "SH-EVID-ELIG-2026"
+        ],
+        "version": "SH-ELIG-PERMIT5-YES@2026-02-26.1",
+        "supersedes": [],
+        "review_status": "verified"
+      },
+      {
+        "rule_id": "SH-ELIG-PERMIT5-NO",
+        "jurisdiction": "310000",
+        "decision_type": "purchase_eligibility",
+        "description": "居住证满五年路径全市已有一套",
+        "priority": 805,
+        "required_inputs": [
+          "buyer.residency_type",
+          "buyer.local_residence_permit_years",
+          "buyer.housing_count_target_zone"
+        ],
+        "when": {
+          "all": [
+            {
+              "field": "buyer.residency_type",
+              "op": "eq",
+              "value": "nonlocal_hukou"
+            },
+            {
+              "field": "buyer.local_residence_permit_years",
+              "op": "gte",
+              "value": 5
+            },
+            {
+              "field": "buyer.housing_count_target_zone",
+              "op": "gte",
+              "value": 1
+            }
+          ]
+        },
+        "result": {
+          "status": "ineligible",
+          "reason": "居住证满五年路径已达到全市一套上限"
+        },
+        "effective_from": "2026-02-26",
+        "effective_to": null,
+        "evidence_ids": [
+          "SH-EVID-ELIG-2026"
+        ],
+        "version": "SH-ELIG-PERMIT5-NO@2026-02-26.1",
+        "supersedes": [],
+        "review_status": "verified"
+      },
+      {
+        "rule_id": "SH-ELIG-OUT-NONLOCAL-NO",
+        "jurisdiction": "310000",
+        "decision_type": "purchase_eligibility",
+        "description": "非沪籍未满一年不能按一般路径购买",
+        "priority": 800,
+        "required_inputs": [
+          "property.zone",
+          "buyer.residency_type",
+          "buyer.continuous_social_tax_months",
+          "buyer.local_residence_permit_years"
+        ],
+        "when": {
+          "all": [
+            {
+              "field": "property.zone",
+              "op": "eq",
+              "value": "outside_shanghai_outer_ring"
+            },
+            {
+              "field": "buyer.residency_type",
+              "op": "eq",
+              "value": "nonlocal_hukou"
+            },
+            {
+              "field": "buyer.continuous_social_tax_months",
+              "op": "lt",
+              "value": 12
+            },
+            {
+              "field": "buyer.local_residence_permit_years",
+              "op": "lt",
+              "value": 5
+            }
+          ]
+        },
+        "result": {
+          "status": "ineligible",
+          "reason": "连续社保或个税未满一年，且上海居住证未满五年"
+        },
+        "effective_from": "2026-02-26",
+        "effective_to": null,
+        "evidence_ids": [
+          "SH-EVID-ELIG-2026"
+        ],
+        "version": "SH-ELIG-OUT-NONLOCAL-NO@2026-02-26.1",
+        "supersedes": [],
+        "review_status": "verified"
+      },
+      {
+        "rule_id": "SH-ELIG-IN-NONLOCAL-SOCIAL-NO",
+        "jurisdiction": "310000",
+        "decision_type": "purchase_eligibility",
+        "description": "非沪籍未满一年不能买外环内",
+        "priority": 795,
+        "required_inputs": [
+          "property.zone",
+          "buyer.residency_type",
+          "buyer.continuous_social_tax_months",
+          "buyer.local_residence_permit_years"
+        ],
+        "when": {
+          "all": [
+            {
+              "field": "property.zone",
+              "op": "eq",
+              "value": "inside_shanghai_outer_ring"
+            },
+            {
+              "field": "buyer.residency_type",
+              "op": "eq",
+              "value": "nonlocal_hukou"
+            },
+            {
+              "field": "buyer.continuous_social_tax_months",
+              "op": "lt",
+              "value": 12
+            },
+            {
+              "field": "buyer.local_residence_permit_years",
+              "op": "lt",
+              "value": 5
+            }
+          ]
+        },
+        "result": {
+          "status": "ineligible",
+          "reason": "连续社保或个税未满一年，且上海居住证未满五年"
+        },
+        "effective_from": "2026-02-26",
+        "effective_to": null,
+        "evidence_ids": [
+          "SH-EVID-ELIG-2026"
+        ],
+        "version": "SH-ELIG-IN-NONLOCAL-SOCIAL-NO@2026-02-26.1",
+        "supersedes": [],
+        "review_status": "verified"
+      }
+    ],
+    "unknown_policy": "任一命中规则的 required_inputs 缺失，或不存在完整匹配规则时返回 unknown 并列出缺失字段。"
+  },
+  "tax": {
+    "inherits": "cn-tax@2026-07-16.1",
+    "unique_home_verification_scope": "上海市",
+    "assessed_iit": {
+      "default_rate": 0.01,
+      "status": "verified",
+      "evidence_ids": [],
+      "missing_behavior": "未显式输入时可采用本包已核验默认值"
+    },
+    "vat_surcharge": {
+      "small_scale_reduction_factor": 0.5,
+      "status": "subject_confirmation_required",
+      "missing_behavior": "必须确认卖方是否适用增值税小规模纳税人六税两费减半政策及城建税税率"
+    },
+    "holding_tax": {
+      "status": "separate_annual_tax_route",
+      "included_in_closing_tax_total": false,
+      "exact_amount_status": "requires_dedicated_household_area_and_exemption_inputs",
+      "required_inputs": [
+        "acquisition_date",
+        "household_members",
+        "household_owned_area_sqm",
+        "newly_acquired_taxable_area_sqm",
+        "applicable_exemptions"
+      ],
+      "reason": "上海个人住房房产税属于持有环节；当前交易场景 Schema 不足以确定年度金额，必须单独评估。",
+      "evidence_ids": [
+        "SH-EVID-ELIG-2026"
+      ]
+    }
+  },
+  "boundaries": [
+    "购房资格不等于房屋具备转让条件，也不等于银行同意贷款。",
+    "计税价格必须使用主管税务机关接受的 taxable_transfer_price。",
+    "政策性住房、共有产权、房改房、保障性住房等不适用普通商品住房规则。",
+    "执行器按 query_date 选择有效规则；政策冲突或证据待复核时返回 unknown/conditional。"
+  ]
+}

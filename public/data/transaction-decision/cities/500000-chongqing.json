@@ -1,0 +1,142 @@
+{
+  "package_version": "cq@2024-09-01.decision.1",
+  "knowledge_release": "2026.07.16-decision-r1",
+  "as_of_date": "2026-07-16",
+  "city": {
+    "code": "500000",
+    "name": "重庆"
+  },
+  "scope": {
+    "subject": "mainland_natural_person_household",
+    "property": "ordinary_second_hand_commodity_residential_housing",
+    "special_routes": [
+      "hk_macao_taiwan_overseas_chinese",
+      "foreign_national",
+      "policy_housing"
+    ]
+  },
+  "evidence": [
+    {
+      "evidence_id": "CQ-EVID-MARKET-2024",
+      "title": "重庆调整优化房地产交易政策",
+      "url": "https://cq.gov.cn/ywdt/bmts/202409/t20240902_13583768.html",
+      "authority": "重庆市人民政府",
+      "clause_summary": "普通商品住房交易按区县认定信贷套数，取得产权证后可交易；特殊保障住房另行审核",
+      "effective_from": "2024-09-01",
+      "review_status": "verified"
+    },
+    {
+      "evidence_id": "CQ-EVID-PROPERTY-TAX-2025",
+      "title": "重庆市个人住房房产税试点政策",
+      "url": "https://www.cq.gov.cn/zwgk/zfxxgkml/szfwj/xzgfxwj/szfbgt/202505/t20250527_14659500_app.html",
+      "authority": "重庆市人民政府",
+      "clause_summary": "高档住房和独栋商品住宅个人住房房产税的征税对象、税率和免税面积",
+      "effective_from": "2025-01-01",
+      "review_status": "verified"
+    }
+  ],
+  "purchase_eligibility": {
+    "decision_model": "unrestricted",
+    "rules": [
+      {
+        "rule_id": "CQ-ELIG-OVERSEAS-ROUTE",
+        "jurisdiction": "500000",
+        "decision_type": "purchase_eligibility",
+        "description": "境外个人及港澳台侨购房进入专门核验路径",
+        "priority": 900,
+        "required_inputs": [
+          "buyer.residency_type"
+        ],
+        "when": {
+          "field": "buyer.residency_type",
+          "op": "in",
+          "value": [
+            "hk_macao_taiwan_overseas_chinese",
+            "foreign_national"
+          ]
+        },
+        "result": {
+          "status": "conditional",
+          "reason": "需核验境内工作或学习、居留、自用目的及当地不动产登记材料，不能套用居民家庭规则"
+        },
+        "effective_from": "2024-09-01",
+        "effective_to": null,
+        "evidence_ids": [
+          "CQ-EVID-MARKET-2024"
+        ],
+        "version": "CQ-ELIG-OVERSEAS-ROUTE@2024-09-01.1",
+        "supersedes": [],
+        "review_status": "needs_review"
+      },
+      {
+        "rule_id": "CQ-ELIG-001",
+        "jurisdiction": "500000",
+        "decision_type": "purchase_eligibility",
+        "description": "境内居民购买普通二手商品住房不再进行普遍限购资格审核",
+        "priority": 500,
+        "required_inputs": [
+          "buyer.residency_type"
+        ],
+        "when": {
+          "field": "buyer.residency_type",
+          "op": "in",
+          "value": [
+            "local_hukou",
+            "nonlocal_hukou"
+          ]
+        },
+        "result": {
+          "status": "eligible",
+          "reason": "现行政策已取消普通商品住房普遍限购；本结论不代表房屋可交易性或贷款获批"
+        },
+        "effective_from": "2024-09-01",
+        "effective_to": null,
+        "evidence_ids": [
+          "CQ-EVID-MARKET-2024"
+        ],
+        "version": "CQ-ELIG-001@2024-09-01.1",
+        "supersedes": [],
+        "review_status": "verified"
+      }
+    ],
+    "unknown_policy": "任一命中规则的 required_inputs 缺失，或不存在完整匹配规则时返回 unknown 并列出缺失字段。"
+  },
+  "tax": {
+    "inherits": "cn-tax@2026-07-16.1",
+    "unique_home_verification_scope": "重庆市",
+    "assessed_iit": {
+      "default_rate": null,
+      "status": "authority_confirmation_required",
+      "evidence_ids": [],
+      "missing_behavior": "必须输入经主管税务机关确认的 seller.iit_assessed_rate，否则个税金额为 unknown"
+    },
+    "vat_surcharge": {
+      "small_scale_reduction_factor": 0.5,
+      "status": "subject_confirmation_required",
+      "missing_behavior": "必须确认卖方是否适用增值税小规模纳税人六税两费减半政策及城建税税率"
+    },
+    "holding_tax": {
+      "status": "separate_annual_tax_route",
+      "included_in_closing_tax_total": false,
+      "exact_amount_status": "requires_taxable_housing_confirmation",
+      "trigger": "高档住房或独栋商品住宅等法定征税对象",
+      "required_inputs": [
+        "property.is_high_end_housing",
+        "property.is_detached_house",
+        "tax_authority_confirmed_taxable_value",
+        "tax_free_area_sqm",
+        "applicable_rate"
+      ],
+      "reason": "重庆个人住房房产税属于持有环节，须先由主管部门确认征税对象、免税面积和适用税率。",
+      "evidence_ids": [
+        "CQ-EVID-PROPERTY-TAX-2025"
+      ]
+    }
+  },
+  "boundaries": [
+    "购房资格不等于房屋具备转让条件，也不等于银行同意贷款。",
+    "计税价格必须使用主管税务机关接受的 taxable_transfer_price。",
+    "政策性住房、共有产权、房改房、保障性住房等不适用普通商品住房规则。",
+    "执行器按 query_date 选择有效规则；政策冲突或证据待复核时返回 unknown/conditional。"
+  ]
+}

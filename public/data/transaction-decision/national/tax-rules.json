@@ -1,0 +1,160 @@
+{
+  "packageVersion": "cn-tax@2026-07-16.1",
+  "effectiveSelection": "effective_from <= query_date < effective_to",
+  "currency": "CNY",
+  "rounding": { "mode": "half_up", "scale": 2 },
+  "derivedFields": [
+    {
+      "field": "income_excluding_vat",
+      "formula": "prices.taxable_transfer_price - calculated.vat"
+    },
+    {
+      "field": "seller_iit_taxable_income",
+      "formula": "max(0, income_excluding_vat - seller.original_value - seller.deductible_taxes - seller.reasonable_expenses)"
+    }
+  ],
+  "rules": [
+    {
+      "rule_id": "NAT-TAX-SCOPE-001",
+      "jurisdiction": "CN",
+      "decision_type": "scope_route",
+      "description": "本包只计算自然人普通二手住宅买卖",
+      "priority": 1000,
+      "required_inputs": ["buyer.subject_type", "seller.subject_type", "property.transaction_type", "property.usage", "property.ownership_type"],
+      "when": { "any": [
+        { "field": "buyer.subject_type", "op": "neq", "value": "natural_person" },
+        { "field": "seller.subject_type", "op": "neq", "value": "natural_person" },
+        { "field": "property.transaction_type", "op": "neq", "value": "second_hand_sale" },
+        { "field": "property.usage", "op": "neq", "value": "residential" },
+        { "field": "property.ownership_type", "op": "neq", "value": "ordinary_commodity_housing" }
+      ] },
+      "result": { "status": "out_of_scope", "reason": "主体、交易方式或房屋类型超出普通自然人二手住宅买卖范围" },
+      "effective_from": "2026-01-01",
+      "effective_to": null,
+      "evidence_ids": ["NAT-EVID-DEED-2024-16", "NAT-EVID-VAT-2025-17", "NAT-EVID-IIT-2006-108"],
+      "version": "NAT-TAX-SCOPE-001@2026-07-16.1",
+      "supersedes": [],
+      "review_status": "verified"
+    },
+    {
+      "rule_id": "NAT-TAX-DEED-001-A",
+      "jurisdiction": "CN",
+      "decision_type": "tax",
+      "description": "家庭唯一住房且面积不超过140平方米",
+      "priority": 500,
+      "required_inputs": ["buyer.housing_count_deed_tax_family", "property.area_sqm", "prices.taxable_transfer_price"],
+      "when": { "all": [
+        { "field": "buyer.housing_count_deed_tax_family", "op": "eq", "value": 0 },
+        { "field": "property.area_sqm", "op": "lte", "value": 140 }
+      ] },
+      "result": { "status": "applies", "tax_item": "deed_tax", "legal_taxpayer": "buyer", "rate": 0.01, "formula_id": "base_times_rate", "formula": "prices.taxable_transfer_price × 1%" },
+      "effective_from": "2024-12-01", "effective_to": null,
+      "evidence_ids": ["NAT-EVID-DEED-2024-16"], "version": "NAT-TAX-DEED-001@2024-12-01.1", "supersedes": [], "review_status": "verified"
+    },
+    {
+      "rule_id": "NAT-TAX-DEED-001-B",
+      "jurisdiction": "CN", "decision_type": "tax", "description": "家庭唯一住房且面积超过140平方米", "priority": 490,
+      "required_inputs": ["buyer.housing_count_deed_tax_family", "property.area_sqm", "prices.taxable_transfer_price"],
+      "when": { "all": [{ "field": "buyer.housing_count_deed_tax_family", "op": "eq", "value": 0 }, { "field": "property.area_sqm", "op": "gt", "value": 140 }] },
+      "result": { "status": "applies", "tax_item": "deed_tax", "legal_taxpayer": "buyer", "rate": 0.015, "formula_id": "base_times_rate", "formula": "prices.taxable_transfer_price × 1.5%" },
+      "effective_from": "2024-12-01", "effective_to": null, "evidence_ids": ["NAT-EVID-DEED-2024-16"], "version": "NAT-TAX-DEED-001@2024-12-01.1", "supersedes": [], "review_status": "verified"
+    },
+    {
+      "rule_id": "NAT-TAX-DEED-001-C",
+      "jurisdiction": "CN", "decision_type": "tax", "description": "家庭第二套住房且面积不超过140平方米", "priority": 480,
+      "required_inputs": ["buyer.housing_count_deed_tax_family", "property.area_sqm", "prices.taxable_transfer_price"],
+      "when": { "all": [{ "field": "buyer.housing_count_deed_tax_family", "op": "eq", "value": 1 }, { "field": "property.area_sqm", "op": "lte", "value": 140 }] },
+      "result": { "status": "applies", "tax_item": "deed_tax", "legal_taxpayer": "buyer", "rate": 0.01, "formula_id": "base_times_rate", "formula": "prices.taxable_transfer_price × 1%" },
+      "effective_from": "2024-12-01", "effective_to": null, "evidence_ids": ["NAT-EVID-DEED-2024-16"], "version": "NAT-TAX-DEED-001@2024-12-01.1", "supersedes": [], "review_status": "verified"
+    },
+    {
+      "rule_id": "NAT-TAX-DEED-001-D",
+      "jurisdiction": "CN", "decision_type": "tax", "description": "家庭第二套住房且面积超过140平方米", "priority": 470,
+      "required_inputs": ["buyer.housing_count_deed_tax_family", "property.area_sqm", "prices.taxable_transfer_price"],
+      "when": { "all": [{ "field": "buyer.housing_count_deed_tax_family", "op": "eq", "value": 1 }, { "field": "property.area_sqm", "op": "gt", "value": 140 }] },
+      "result": { "status": "applies", "tax_item": "deed_tax", "legal_taxpayer": "buyer", "rate": 0.02, "formula_id": "base_times_rate", "formula": "prices.taxable_transfer_price × 2%" },
+      "effective_from": "2024-12-01", "effective_to": null, "evidence_ids": ["NAT-EVID-DEED-2024-16"], "version": "NAT-TAX-DEED-001@2024-12-01.1", "supersedes": [], "review_status": "verified"
+    },
+    {
+      "rule_id": "NAT-TAX-DEED-001-E",
+      "jurisdiction": "CN", "decision_type": "tax", "description": "家庭第三套及以上普通住宅按本知识包覆盖城市的一般契税率3%", "priority": 460,
+      "required_inputs": ["buyer.housing_count_deed_tax_family", "prices.taxable_transfer_price"],
+      "when": { "field": "buyer.housing_count_deed_tax_family", "op": "gte", "value": 2 },
+      "result": { "status": "applies", "tax_item": "deed_tax", "legal_taxpayer": "buyer", "rate": 0.03, "formula_id": "base_times_rate", "formula": "prices.taxable_transfer_price × 3%" },
+      "effective_from": "2024-12-01", "effective_to": null, "evidence_ids": ["NAT-EVID-DEED-2024-16"], "version": "NAT-TAX-DEED-001@2024-12-01.1", "supersedes": [], "review_status": "verified"
+    },
+    {
+      "rule_id": "NAT-TAX-VAT-001-A",
+      "jurisdiction": "CN", "decision_type": "tax", "description": "购买不足2年的住房全额缴纳增值税", "priority": 500,
+      "required_inputs": ["seller.holding_years", "prices.taxable_transfer_price"],
+      "when": { "field": "seller.holding_years", "op": "lt", "value": 2 },
+      "result": { "status": "applies", "tax_item": "vat", "legal_taxpayer": "seller", "rate": 0.03, "formula_id": "housing_vat_full", "formula": "prices.taxable_transfer_price ÷ 1.03 × 3%" },
+      "effective_from": "2026-01-01", "effective_to": null, "evidence_ids": ["NAT-EVID-VAT-2025-17"], "version": "NAT-TAX-VAT-001@2026-01-01.1", "supersedes": [], "review_status": "verified"
+    },
+    {
+      "rule_id": "NAT-TAX-VAT-001-B",
+      "jurisdiction": "CN", "decision_type": "tax", "description": "购买满2年的住房免征增值税", "priority": 490,
+      "required_inputs": ["seller.holding_years"],
+      "when": { "field": "seller.holding_years", "op": "gte", "value": 2 },
+      "result": { "status": "exempt", "tax_item": "vat", "legal_taxpayer": "seller", "rate": 0, "formula_id": "zero", "formula": "0" },
+      "effective_from": "2026-01-01", "effective_to": null, "evidence_ids": ["NAT-EVID-VAT-2025-17"], "version": "NAT-TAX-VAT-001@2026-01-01.1", "supersedes": [], "review_status": "verified"
+    },
+    {
+      "rule_id": "NAT-TAX-SUR-001",
+      "jurisdiction": "CN", "decision_type": "tax", "description": "产生增值税时计算城建税及教育附加", "priority": 400,
+      "required_inputs": ["seller.urban_maintenance_tax_rate", "seller.is_vat_small_scale_taxpayer"],
+      "when": { "field": "calculated.vat", "op": "gt", "value": 0 },
+      "result": { "status": "applies", "tax_item": "vat_surcharges", "legal_taxpayer": "seller", "rate": null, "formula_id": "vat_surcharges", "formula": "vat × (城建税率 + 3% + 2%) × 减征系数" },
+      "effective_from": "2023-01-01", "effective_to": "2028-01-01", "evidence_ids": ["NAT-EVID-SURTAX-RATES", "NAT-EVID-SIX-TAX-2023-12"], "version": "NAT-TAX-SUR-001@2023-01-01.1", "supersedes": [], "review_status": "verified"
+    },
+    {
+      "rule_id": "NAT-TAX-IIT-001-A",
+      "jurisdiction": "CN", "decision_type": "tax", "description": "满五唯一免征个人所得税", "priority": 600,
+      "required_inputs": ["seller.holding_years", "seller.family_only_home_in_required_scope"],
+      "when": { "all": [{ "field": "seller.holding_years", "op": "gte", "value": 5 }, { "field": "seller.family_only_home_in_required_scope", "op": "eq", "value": true }] },
+      "result": { "status": "exempt", "tax_item": "individual_income_tax", "legal_taxpayer": "seller", "rate": 0, "formula_id": "zero", "formula": "0" },
+      "effective_from": "2006-08-01", "effective_to": null, "evidence_ids": ["NAT-EVID-IIT-2006-108"], "version": "NAT-TAX-IIT-001@current.1", "supersedes": [], "review_status": "verified"
+    },
+    {
+      "rule_id": "NAT-TAX-IIT-001-B",
+      "jurisdiction": "CN", "decision_type": "tax", "description": "原值和扣除凭证完整时核实征收个人所得税", "priority": 500,
+      "required_inputs": ["seller.iit_method", "seller.original_value", "seller.deductible_taxes", "seller.reasonable_expenses", "prices.taxable_transfer_price"],
+      "when": { "field": "seller.iit_method", "op": "eq", "value": "verified" },
+      "result": { "status": "applies", "tax_item": "individual_income_tax", "legal_taxpayer": "seller", "rate": 0.2, "formula_id": "iit_verified", "formula": "max(0, 不含增值税转让收入 − 原值 − 税金 − 合理费用) × 20%" },
+      "effective_from": "2006-08-01", "effective_to": null, "evidence_ids": ["NAT-EVID-IIT-2006-108"], "version": "NAT-TAX-IIT-001@current.1", "supersedes": [], "review_status": "verified"
+    },
+    {
+      "rule_id": "NAT-TAX-IIT-001-C",
+      "jurisdiction": "CN", "decision_type": "tax", "description": "原值不完整时按主管税务机关确认比例核定个人所得税", "priority": 490,
+      "required_inputs": ["seller.iit_method", "seller.iit_assessed_rate", "prices.taxable_transfer_price"],
+      "when": { "field": "seller.iit_method", "op": "eq", "value": "assessed" },
+      "result": { "status": "applies", "tax_item": "individual_income_tax", "legal_taxpayer": "seller", "rate": null, "formula_id": "iit_assessed", "formula": "不含增值税转让收入 × 主管税务机关确认的核定征收率" },
+      "effective_from": "2006-08-01", "effective_to": null, "evidence_ids": ["NAT-EVID-IIT-2006-108"], "version": "NAT-TAX-IIT-001@current.1", "supersedes": [], "review_status": "verified"
+    },
+    {
+      "rule_id": "NAT-TAX-STAMP-001",
+      "jurisdiction": "CN", "decision_type": "tax", "description": "个人买卖住房暂免印花税", "priority": 300,
+      "required_inputs": [], "when": { "field": "property.usage", "op": "eq", "value": "residential" },
+      "result": { "status": "exempt", "tax_item": "stamp_duty", "legal_taxpayer": "buyer_and_seller", "rate": 0, "formula_id": "zero", "formula": "0" },
+      "effective_from": "2008-11-01", "effective_to": null, "evidence_ids": ["NAT-EVID-ZERO-TAX-2008-137"], "version": "NAT-TAX-STAMP-001@current.1", "supersedes": [], "review_status": "verified"
+    },
+    {
+      "rule_id": "NAT-TAX-LAT-001",
+      "jurisdiction": "CN", "decision_type": "tax", "description": "个人销售住房暂免土地增值税", "priority": 300,
+      "required_inputs": [], "when": { "field": "property.usage", "op": "eq", "value": "residential" },
+      "result": { "status": "exempt", "tax_item": "land_appreciation_tax", "legal_taxpayer": "seller", "rate": 0, "formula_id": "zero", "formula": "0" },
+      "effective_from": "2008-11-01", "effective_to": null, "evidence_ids": ["NAT-EVID-ZERO-TAX-2008-137"], "version": "NAT-TAX-LAT-001@current.1", "supersedes": [], "review_status": "verified"
+    }
+  ],
+  "postTransactionBenefits": [
+    {
+      "rule_id": "NAT-TAX-IIT-REFUND-001",
+      "tax_item": "individual_income_tax_refund",
+      "cashflow_timing": "future_refund_not_offset_at_closing",
+      "formula": "new_purchase_amount >= sale_amount ? paid_iit : paid_iit × new_purchase_amount ÷ sale_amount",
+      "effective_from": "2026-01-01",
+      "effective_to": "2028-01-01",
+      "evidence_ids": ["NAT-EVID-REFUND-2026-3"]
+    }
+  ]
+}

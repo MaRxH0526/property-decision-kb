@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://marxh.cn/schemas/transaction-evaluation.schema.json",
+  "title": "TransactionDecisionEvaluation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["query_date", "city_code", "purchase_eligibility", "tax_items", "tax_totals", "missing_inputs", "assumptions", "calculation_trace", "evidence", "policy_versions"],
+  "properties": {
+    "query_date": { "type": "string", "format": "date" },
+    "city_code": { "type": "string" },
+    "purchase_eligibility": {
+      "type": "object",
+      "required": ["status", "reason", "rule_ids"],
+      "properties": {
+        "status": { "enum": ["eligible", "ineligible", "conditional", "unknown", "out_of_scope"] },
+        "reason": { "type": "string" },
+        "rule_ids": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "tax_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["tax_item", "legal_taxpayer", "actual_bearer", "status", "amount", "formula", "rule_ids"],
+        "properties": {
+          "tax_item": { "type": "string" },
+          "legal_taxpayer": { "type": "string" },
+          "actual_bearer": { "type": ["string", "null"] },
+          "status": { "enum": ["calculated", "exempt", "unknown", "not_applicable"] },
+          "taxable_base": { "type": ["number", "null"] },
+          "rate": { "type": ["number", "null"] },
+          "amount": { "type": ["number", "null"] },
+          "formula": { "type": "string" },
+          "rule_ids": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "tax_totals": {
+      "type": "object",
+      "required": ["buyer_legal_taxes", "seller_legal_taxes", "buyer_actual_cash_taxes", "holding_taxes_excluded"],
+      "properties": {
+        "buyer_legal_taxes": { "type": ["number", "null"] },
+        "seller_legal_taxes": { "type": ["number", "null"] },
+        "buyer_actual_cash_taxes": { "type": ["number", "null"] },
+        "holding_taxes_excluded": { "type": ["number", "null"] }
+      }
+    },
+    "missing_inputs": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "assumptions": { "type": "array", "items": { "type": "string" } },
+    "calculation_trace": { "type": "array", "items": { "type": "string" } },
+    "evidence": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "policy_versions": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+  }
+}

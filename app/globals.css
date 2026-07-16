@@ -1126,6 +1126,10 @@ td code {
   font-weight: 400;
 }
 
+.resource-list {
+  margin-top: 14px;
+}
+
 footer {
   display: flex;
   align-items: end;

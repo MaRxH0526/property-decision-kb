@@ -1,0 +1,90 @@
+{
+  "packageVersion": "cn-tax-evidence@2026-07-16.1",
+  "reviewedAt": "2026-07-16",
+  "items": [
+    {
+      "evidence_id": "NAT-EVID-DEED-2024-16",
+      "title": "关于促进房地产市场平稳健康发展有关税收政策的公告",
+      "document_no": "财政部 税务总局 住房城乡建设部公告2024年第16号",
+      "authority": "财政部、税务总局、住房城乡建设部",
+      "url": "https://szs.mof.gov.cn/zhengcefabu/202411/t20241113_3947450.htm",
+      "issued_date": "2024-11-13",
+      "effective_from": "2024-12-01",
+      "effective_to": null,
+      "verified_status": "current",
+      "clause_summary": "家庭唯一和第二套住房以140平方米为界适用1%、1.5%和2%契税优惠；家庭包括购房人、配偶及未成年子女。"
+    },
+    {
+      "evidence_id": "NAT-EVID-VAT-2025-17",
+      "title": "关于个人销售住房增值税政策的公告",
+      "document_no": "财政部 税务总局公告2025年第17号",
+      "authority": "财政部、税务总局",
+      "url": "https://fgk.chinatax.gov.cn/zcfgk/c102416/c5246356/content.html",
+      "issued_date": "2025-12-29",
+      "effective_from": "2026-01-01",
+      "effective_to": null,
+      "verified_status": "current",
+      "clause_summary": "个人销售购买不足2年的住房按3%征收率全额缴纳增值税，购买2年以上含2年的住房免征。"
+    },
+    {
+      "evidence_id": "NAT-EVID-IIT-2006-108",
+      "title": "关于个人住房转让所得征收个人所得税有关问题的通知",
+      "document_no": "国税发〔2006〕108号",
+      "authority": "国家税务总局",
+      "url": "https://www.chinatax.gov.cn/n810341/n810765/n812183/n812846/c1197073/content.html",
+      "issued_date": "2006-07-18",
+      "effective_from": "2006-08-01",
+      "effective_to": null,
+      "verified_status": "current_with_later_refund_policy",
+      "clause_summary": "核实征收允许扣除原值、税金和合理费用；原值不完整时由省市在转让收入1%至3%范围确定核定比例；满五唯一免税。"
+    },
+    {
+      "evidence_id": "NAT-EVID-SURTAX-RATES",
+      "title": "城建税与教育费附加、地方教育附加税率说明",
+      "document_no": "12366税法小黑板",
+      "authority": "国家税务总局12366",
+      "url": "https://12366.chinatax.gov.cn/bzds/pdfview/pdf/125-2-2.pdf",
+      "issued_date": null,
+      "effective_from": "2021-09-01",
+      "effective_to": null,
+      "verified_status": "current",
+      "clause_summary": "城建税按所在地适用7%、5%或1%；教育费附加3%，地方教育附加2%，均以实际缴纳增值税等为计征依据。"
+    },
+    {
+      "evidence_id": "NAT-EVID-SIX-TAX-2023-12",
+      "title": "进一步支持小微企业和个体工商户发展有关税费政策",
+      "document_no": "财政部 税务总局公告2023年第12号",
+      "authority": "财政部、税务总局",
+      "url": "https://www.chinatax.gov.cn/chinatax/n810356/n3010387/c5211123/content.html",
+      "issued_date": "2023-08-02",
+      "effective_from": "2023-01-01",
+      "effective_to": "2028-01-01",
+      "verified_status": "current",
+      "clause_summary": "符合条件的增值税小规模纳税人等在2027年末前减半征收城建税、教育费附加和地方教育附加等六税两费。"
+    },
+    {
+      "evidence_id": "NAT-EVID-ZERO-TAX-2008-137",
+      "title": "关于调整房地产交易环节税收政策的通知",
+      "document_no": "财税〔2008〕137号",
+      "authority": "财政部、国家税务总局",
+      "url": "https://zhejiang.chinatax.gov.cn/art/2008/10/22/art_8409_14513.html",
+      "issued_date": "2008-10-22",
+      "effective_from": "2008-11-01",
+      "effective_to": null,
+      "verified_status": "current",
+      "clause_summary": "个人销售或购买住房暂免征收印花税，个人销售住房暂免征收土地增值税。"
+    },
+    {
+      "evidence_id": "NAT-EVID-REFUND-2026-3",
+      "title": "延续实施支持居民换购住房有关个人所得税政策的公告",
+      "document_no": "财政部 税务总局 住房城乡建设部公告2026年第3号",
+      "authority": "财政部、税务总局、住房城乡建设部",
+      "url": "https://fgk.chinatax.gov.cn/zcfgk/c102416/c5246971/content.html",
+      "issued_date": "2026-01-12",
+      "effective_from": "2026-01-01",
+      "effective_to": "2028-01-01",
+      "verified_status": "current",
+      "clause_summary": "同城出售自有住房后1年内重新购买住房，符合产权人等条件的，按新购金额与出售金额关系全部或部分退还已缴个人所得税。"
+    }
+  ]
+}

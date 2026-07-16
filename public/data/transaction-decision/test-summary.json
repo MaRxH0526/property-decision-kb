@@ -1,0 +1,69 @@
+{
+  "release": "2026.07.16-decision-r1",
+  "generated_at": "2026-07-16",
+  "case_count": 348,
+  "coverage": {
+    "cities": 12,
+    "cases_per_city": 29,
+    "includes": [
+      "positive",
+      "negative",
+      "threshold_equal",
+      "threshold_adjacent",
+      "missing_input",
+      "out_of_scope",
+      "effective_date_before"
+    ]
+  },
+  "city_counts": [
+    {
+      "city": "北京",
+      "cases": 29
+    },
+    {
+      "city": "深圳",
+      "cases": 29
+    },
+    {
+      "city": "广州",
+      "cases": 29
+    },
+    {
+      "city": "上海",
+      "cases": 29
+    },
+    {
+      "city": "天津",
+      "cases": 29
+    },
+    {
+      "city": "武汉",
+      "cases": 29
+    },
+    {
+      "city": "杭州",
+      "cases": 29
+    },
+    {
+      "city": "苏州",
+      "cases": 29
+    },
+    {
+      "city": "成都",
+      "cases": 29
+    },
+    {
+      "city": "重庆",
+      "cases": 29
+    },
+    {
+      "city": "西安",
+      "cases": 29
+    },
+    {
+      "city": "南京",
+      "cases": 29
+    }
+  ],
+  "note": "完整黄金场景保留在源码仓库 knowledge/transaction_decision/tests/golden-cases.json；公网仅发布轻量覆盖摘要。"
+}

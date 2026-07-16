@@ -1,0 +1,60 @@
+{
+  "knowledgeBase": "second-hand-housing-transaction-decision",
+  "release": "2026.07.16-decision-r1",
+  "schemaVersion": "2.0.0",
+  "asOfDate": "2026-07-16",
+  "reviewStatus": "validated_snapshot",
+  "coverage": {
+    "executableRules": 70,
+    "cityEligibilityRules": 58,
+    "nationalRules": 12,
+    "goldenCases": 348,
+    "validationAssertions": 4156
+  },
+  "scope": {
+    "buyer": "natural_person",
+    "seller": "natural_person",
+    "transaction": "ordinary_second_hand_residential_sale",
+    "excludes": [
+      "enterprise_purchase",
+      "inheritance",
+      "gift",
+      "judicial_auction",
+      "non_residential",
+      "rural_homestead",
+      "unclassified_policy_housing"
+    ]
+  },
+  "resultStatuses": ["eligible", "ineligible", "conditional", "unknown", "out_of_scope"],
+  "nationalPackages": [
+    "national/tax-rules.json",
+    "national/evidence.json"
+  ],
+  "cityPackages": [
+    { "code": "110000", "name": "北京", "file": "cities/110000-beijing.json" },
+    { "code": "440300", "name": "深圳", "file": "cities/440300-shenzhen.json" },
+    { "code": "440100", "name": "广州", "file": "cities/440100-guangzhou.json" },
+    { "code": "310000", "name": "上海", "file": "cities/310000-shanghai.json" },
+    { "code": "120000", "name": "天津", "file": "cities/120000-tianjin.json" },
+    { "code": "420100", "name": "武汉", "file": "cities/420100-wuhan.json" },
+    { "code": "330100", "name": "杭州", "file": "cities/330100-hangzhou.json" },
+    { "code": "320500", "name": "苏州", "file": "cities/320500-suzhou.json" },
+    { "code": "510100", "name": "成都", "file": "cities/510100-chengdu.json" },
+    { "code": "500000", "name": "重庆", "file": "cities/500000-chongqing.json" },
+    { "code": "610100", "name": "西安", "file": "cities/610100-xian.json" },
+    { "code": "320100", "name": "南京", "file": "cities/320100-nanjing.json" }
+  ],
+  "schemas": {
+    "scenario": "schemas/scenario.schema.json",
+    "rule": "schemas/rule.schema.json",
+    "evaluation": "schemas/evaluation.schema.json"
+  },
+  "tests": "tests/golden-cases.json",
+  "governance": {
+    "effectiveDateSelection": "effective_from <= query_date < effective_to",
+    "unknownOnConflict": true,
+    "unknownOnMissingRequiredInput": true,
+    "officialSourcesOnlyForExecutableRules": true,
+    "automaticRulePublication": false
+  }
+}
