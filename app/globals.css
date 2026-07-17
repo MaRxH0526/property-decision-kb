@@ -1861,6 +1861,95 @@ footer span {
   line-height: 1.8;
 }
 
+/* Education pages favor reading comfort over the denser transaction layout. */
+.education-shell .brand strong { font-size: 16px; }
+.education-shell .brand small { font-size: 10px; }
+.education-shell .domain-tabs span { font-size: 14px; }
+.education-shell .domain-tabs small { font-size: 10px; }
+.education-shell .search-shell input { font-size: 16px; }
+.education-shell .release-badge small { font-size: 11px; }
+.education-shell .release-badge strong { font-size: 13px; }
+.education-shell .education-mobile-filters button { font-size: 12px; }
+
+.education-shell .sidebar-label { font-size: 12px; }
+.education-shell .sidebar nav button span { font-size: 15px; }
+.education-shell .sidebar nav button small { font-size: 12px; }
+.education-shell .sidebar-status span { font-size: 11px; }
+.education-shell .sidebar-status strong { font-size: 13px; }
+.education-shell .sidebar-status small { font-size: 12px; }
+
+.education-shell .overline { font-size: 12px; }
+.education-shell .hero-copy p { font-size: 18px; }
+.education-shell .hero-facts span { font-size: 14px; }
+.education-shell .freshness-strip > div { font-size: 13px; }
+.education-shell .freshness-strip > div strong { font-size: 12px; }
+.education-shell .freshness-strip p { font-size: 12px; }
+
+.education-shell .freshness-legend-intro > span { font-size: 12px; }
+.education-shell .freshness-legend-intro h2 { font-size: 23px; }
+.education-shell .freshness-legend-intro p { font-size: 13px; }
+.education-shell .freshness-legend-item > div span { font-size: 13px; }
+.education-shell .freshness-legend-item > div b { font-size: 12px; }
+.education-shell .freshness-legend-item p,
+.education-shell .freshness-legend-item small { font-size: 12px; }
+
+.education-shell .section-intro > span { font-size: 12px; }
+.education-shell .section-intro p { font-size: 16px; }
+.education-shell .education-method article > span { font-size: 12px; }
+.education-shell .education-method h2 { font-size: 28px; }
+.education-shell .education-method p { font-size: 14px; }
+
+.education-shell .city-code { font-size: 11px; }
+.education-shell .education-city-toggle { font-size: 17px; }
+.education-shell .education-city-card h3 { font-size: 27px; }
+.education-shell .education-city-card p { font-size: 13px; }
+.education-shell .education-city-card > small { font-size: 12px; }
+.education-shell .package-heading span { font-size: 12px; }
+.education-shell .package-heading p { font-size: 14px; }
+.education-shell .package-heading > button { font-size: 13px; }
+.education-shell .education-loading,
+.education-shell .education-error { font-size: 15px; }
+
+.education-shell .education-view-tabs button { font-size: 13px; }
+.education-shell .education-view-tabs small { font-size: 11px; }
+.education-shell .education-filters label { font-size: 11px; }
+.education-shell .education-filters select {
+  height: 38px;
+  font-size: 13px;
+}
+.education-shell .filter-result strong { font-size: 21px; }
+.education-shell .filter-result span { font-size: 12px; }
+
+.education-shell .education-record-meta span { font-size: 11px; }
+.education-shell .education-record-meta .freshness-badge { font-size: 10px; }
+.education-shell .education-record-meta .freshness-badge b { font-size: 10px; }
+.education-shell .education-record h4 { font-size: 19px; }
+.education-shell .education-record > p,
+.education-shell .timeline-record p { font-size: 13px; }
+.education-shell .education-record blockquote { font-size: 13px; }
+.education-shell .record-facts div { grid-template-columns: 108px 1fr; }
+.education-shell .record-facts dt,
+.education-shell .record-facts dd { font-size: 12px; }
+.education-shell .record-note { font-size: 12px; }
+.education-shell .freshness-reason { font-size: 12px; }
+.education-shell .freshness-reason strong { font-size: 11px; }
+.education-shell .record-source { font-size: 12px; }
+.education-shell .record-trace { font-size: 11px; }
+
+.education-shell .timeline-date strong { font-size: 15px; }
+.education-shell .timeline-date span { font-size: 12px; }
+.education-shell .school-details summary,
+.education-shell .school-details strong,
+.education-shell .school-details p { font-size: 12px; }
+.education-shell .load-more { font-size: 13px; }
+.education-shell .load-more span { font-size: 11px; }
+.education-shell .coverage-summary strong { font-size: 24px; }
+.education-shell .coverage-summary span { font-size: 12px; }
+.education-shell .coverage-subheading { font-size: 21px; }
+.education-shell .education-boundary span { font-size: 12px; }
+.education-shell .education-boundary h2 { font-size: 30px; }
+.education-shell .education-boundary ul { font-size: 14px; }
+
 @media (max-width: 1180px) {
   .topbar {
     grid-template-columns: 190px auto minmax(280px, 1fr) 130px;
