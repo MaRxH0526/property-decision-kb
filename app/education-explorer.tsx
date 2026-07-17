@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import educationSummaryJson from "./generated/education-summary.json";
 import { DomainTabs, type KnowledgeDomain } from "./domain-tabs";
+import { formatAge, FreshnessBadge, PolicyFreshnessLegend } from "./policy-freshness";
 import type {
   EducationCityData,
   EducationCitySummary,
@@ -82,6 +83,13 @@ const sourceStatusLabels: Record<string, string> = {
   district_led: "区级/流程来源",
 };
 
+const citationModeLabels: Record<string, string> = {
+  allowed: "可正常引用",
+  allowed_with_disclosure: "引用时披露时间与边界",
+  needs_revalidation: "引用前必须重新核验",
+  historical_only: "仅限历史回放",
+};
+
 const schoolLevelLabels: Record<string, string> = {
   primary: "小学",
   junior: "初中",
@@ -111,6 +119,15 @@ function textMatches(query: string, values: Array<string | number | null | undef
 }
 
 function PolicyRecord({ policy }: { policy: EducationPolicy }) {
+  const freshness = {
+    freshnessGrade: policy.freshnessGrade,
+    citationMode: policy.citationMode,
+    freshnessReason: policy.freshnessReason,
+    publishedAt: policy.publishedDate,
+    lastCheckedAt: policy.lastCheckedAt,
+    publicationAgeDays: policy.publicationAgeDays,
+    verificationAgeDays: policy.verificationAgeDays,
+  };
   return (
     <article className="education-record policy-record">
       <div className="education-record-meta">
@@ -120,15 +137,21 @@ function PolicyRecord({ policy }: { policy: EducationPolicy }) {
         <span className={policy.sourceStatus === "fallback" ? "status-warn" : "status-good"}>
           {sourceStatusLabels[policy.sourceStatus] ?? policy.sourceStatus}
         </span>
+        <FreshnessBadge assessment={freshness} />
       </div>
       <h4>{policy.title}</h4>
       <p>{policy.issuingAuthority}</p>
       <dl className="record-facts">
         <div><dt>覆盖口径</dt><dd>{completenessLabels[policy.scopeCompleteness] ?? policy.scopeCompleteness}</dd></div>
         <div><dt>结构化内容</dt><dd>{policy.ruleCount} 条规则 · {policy.timelineCount} 个时间点</dd></div>
-        <div><dt>发布 / 生效</dt><dd>{policy.publishedDate ?? "未标注"} / {policy.effectiveFrom ?? "未标注"}</dd></div>
+        <div><dt>发布时间</dt><dd>{policy.publishedDate ?? "未标注"} · {formatAge(policy.publicationAgeDays)}</dd></div>
+        <div><dt>最近来源检查</dt><dd>{policy.lastCheckedAt ?? "未标注"}{policy.verificationAgeDays !== null ? ` · ${policy.verificationAgeDays} 天前` : ""}</dd></div>
+        <div><dt>引用限制</dt><dd>{citationModeLabels[policy.citationMode] ?? policy.citationMode}</dd></div>
         <div><dt>来源权威度</dt><dd>L{policy.authorityLevel} · {policy.verificationStatus}</dd></div>
       </dl>
+      <div className={`freshness-reason freshness-grade-${policy.freshnessGrade.toLowerCase()}`}>
+        <strong>{policy.freshnessGrade} 级原因</strong><span>{policy.freshnessReason}</span>
+      </div>
       {policy.notes ? <div className="record-note">{policy.notes}</div> : null}
       <a className="record-source" href={policy.sourceUrl} target="_blank" rel="noreferrer">
         查看原始来源 · {policy.sourceTitle}<b aria-hidden="true">↗</b>
@@ -458,6 +481,8 @@ export function EducationExplorer({
             <div><span className="status-dot status-dot-good" /><span>V3扩展校验</span><strong>{educationSummary.extensionValidation.ok ? "passed" : "failed"}</strong></div>
             <p>仅使用 education_kb_project V3；基础事实与待审候选严格区分。</p>
           </div>
+
+          <PolicyFreshnessLegend counts={educationSummary.freshnessModel.gradeCounts} reviewWindowDays={90} />
 
           <section className="education-method" aria-label="教育知识库结构">
             <article><span>01 / POLICY</span><h2>入学政策</h2><p>按城市、区县、学段和年份组织政策文件，再关联资格、户籍、住房、材料、排序与派位规则。</p></article>

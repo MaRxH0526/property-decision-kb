@@ -13,7 +13,8 @@ import csv
 import json
 import re
 import sqlite3
-from collections import defaultdict
+from collections import Counter, defaultdict
+from datetime import date
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -23,6 +24,8 @@ STAGE_LABELS = {
     "junior": "初中",
     "both": "小学 + 初中",
 }
+
+FRESHNESS_MODEL_VERSION = "policy-freshness-v1"
 
 
 def rows(connection: sqlite3.Connection, sql: str, params: Iterable[Any] = ()) -> list[dict[str, Any]]:
@@ -61,6 +64,96 @@ def compact(value: Any) -> Any:
         value = re.sub(r"\s+", " ", value).strip()
         return value or None
     return value
+
+
+def parse_date(value: Any) -> date | None:
+    if not value:
+        return None
+    try:
+        return date.fromisoformat(str(value)[:10])
+    except ValueError:
+        return None
+
+
+def age_days(value: Any, as_of_date: str) -> int | None:
+    start = parse_date(value)
+    end = parse_date(as_of_date)
+    if not start or not end:
+        return None
+    return max(0, (end - start).days)
+
+
+def assess_policy_freshness(policy: dict[str, Any], as_of_date: str) -> dict[str, Any]:
+    publication_age_days = age_days(policy.get("publishedDate"), as_of_date)
+    verification_age_days = age_days(policy.get("sourceAccessedAt"), as_of_date)
+    effective_to = parse_date(policy.get("effectiveTo"))
+    as_of = parse_date(as_of_date)
+    last_checked_at = str(policy["sourceAccessedAt"])[:10] if policy.get("sourceAccessedAt") else None
+
+    if policy.get("status") in {"expired", "superseded"} or (
+        effective_to and as_of and effective_to < as_of
+    ):
+        grade = "D"
+        citation_mode = "historical_only"
+        reason = "政策已过期或被后续文件替代，仅用于历史回放"
+    elif policy.get("sourceStatus") in {"fallback", "url_pending"} or policy.get(
+        "sourceVerificationStatus"
+    ) in {"failed", "stale"}:
+        grade = "C"
+        citation_mode = "needs_revalidation"
+        reason = (
+            "往年政策回退，引用前必须查找当年官方文件"
+            if policy.get("sourceStatus") == "fallback"
+            else "来源链接或核验状态待复核"
+        )
+    elif verification_age_days is None or verification_age_days > 90:
+        grade = "C"
+        citation_mode = "needs_revalidation"
+        reason = "教育政策超过 90 天未检查来源，引用前需重新核验"
+    elif (
+        policy.get("admissionYear") == as_of.year
+        and policy.get("status") == "current"
+        and policy.get("verificationStatus") in {"text_verified", "rules_verified"}
+        and policy.get("sourceVerificationStatus") == "verified"
+    ):
+        grade = "A"
+        citation_mode = "allowed"
+        reason = "当年政策且已完成正文与来源核验"
+    else:
+        grade = "B"
+        citation_mode = "allowed_with_disclosure"
+        reason = (
+            "当年政策目前仅完成元数据核验，引用时需披露边界"
+            if policy.get("admissionYear") == as_of.year
+            else "长期现行政策的适用年度较早，引用时需披露时间"
+        )
+
+    return {
+        "freshnessGrade": grade,
+        "citationMode": citation_mode,
+        "freshnessReason": reason,
+        "lastCheckedAt": last_checked_at,
+        "publicationAgeDays": publication_age_days,
+        "verificationAgeDays": verification_age_days,
+        "freshnessModelVersion": FRESHNESS_MODEL_VERSION,
+    }
+
+
+def policy_freshness_counts(connection: sqlite3.Connection, as_of_date: str) -> dict[str, int]:
+    policies = rows(
+        connection,
+        """
+        SELECT p.admission_year AS admissionYear, p.published_date AS publishedDate,
+               p.effective_to AS effectiveTo, p.status, p.source_status AS sourceStatus,
+               p.verification_status AS verificationStatus,
+               s.accessed_at AS sourceAccessedAt,
+               s.verification_status AS sourceVerificationStatus
+        FROM policy_documents p
+        JOIN sources s ON s.source_id=p.source_id
+        """,
+    )
+    counts = Counter(assess_policy_freshness(policy, as_of_date)["freshnessGrade"] for policy in policies)
+    return {grade: counts.get(grade, 0) for grade in ("A", "B", "C", "D")}
 
 
 def write_json(path: Path, payload: Any) -> None:
@@ -304,6 +397,7 @@ def city_payload(
     city: dict[str, Any],
     summary_metrics: dict[str, Any],
     exported_at: str,
+    as_of_date: str,
     retrieval_packets: list[dict[str, Any]],
     retrieval_summary: dict[str, Any],
     scenario_coverage: list[dict[str, Any]],
@@ -324,6 +418,7 @@ def city_payload(
                p.notes, s.title AS sourceTitle, s.url AS sourceUrl,
                s.publisher AS sourcePublisher, s.source_type AS sourceType,
                s.authority_level AS authorityLevel, s.verification_status AS sourceVerificationStatus,
+               s.accessed_at AS sourceAccessedAt,
                (SELECT COUNT(*) FROM policy_rules r WHERE r.policy_id=p.policy_id) AS ruleCount,
                (SELECT COUNT(*) FROM admission_timeline t WHERE t.policy_id=p.policy_id) AS timelineCount
         FROM policy_documents p
@@ -339,6 +434,7 @@ def city_payload(
     for policy in policies:
         for key, value in list(policy.items()):
             policy[key] = compact(value)
+        policy.update(assess_policy_freshness(policy, as_of_date))
 
     rules = rows(
         policy_db,
@@ -550,6 +646,7 @@ def main() -> None:
         school_meta = metadata(school_db)
         exported_at = max(policy_meta["updated_at"], school_meta["updated_at"])
         extension_validation = validate_v3_extensions(school_db, extraction_index, scenario_index)
+        freshness_counts = policy_freshness_counts(policy_db, version["asOfDate"])
         cities = rows(
             policy_db,
             """
@@ -589,6 +686,11 @@ def main() -> None:
             "validated": bool(validation["ok"] and extension_validation["ok"]),
             "baseValidation": {"ok": bool(validation["ok"]), "generatedAt": validation["generated_at"]},
             "extensionValidation": extension_validation,
+            "freshnessModel": {
+                "version": FRESHNESS_MODEL_VERSION,
+                "asOfDate": version["asOfDate"],
+                "gradeCounts": freshness_counts,
+            },
             "tests": {"passed": int(test_match.group(1)), "total": int(test_match.group(2))} if test_match else None,
             "metrics": {
                 "cities": validation["target_city_count"],
@@ -650,6 +752,7 @@ def main() -> None:
                 city,
                 next(item["metrics"] for item in summaries if item["code"] == city["code"]),
                 exported_at,
+                version["asOfDate"],
                 retrieval_packets,
                 extraction_index.get(city["code"], {}),
                 scenario_index.get(city["code"], []),

@@ -16,6 +16,9 @@ export type CityKey =
 export type KnowledgeSource = {
   title: string;
   url: string;
+  publishedAt?: string;
+  lastCheckedAt?: string;
+  lifecycleStatus?: "current" | "superseded" | "expired";
 };
 
 export type KnowledgeTable = {
@@ -48,6 +51,7 @@ export const knowledgeMeta = {
   decisionRules: 70,
   goldenCases: 348,
   validationAssertions: 4159,
+  freshnessModelVersion: "policy-freshness-v1",
 };
 
 export const cities = [

@@ -10,6 +10,13 @@ import {
   type KnowledgeSection,
 } from "./knowledge-data";
 import { DomainTabs, type KnowledgeDomain } from "./domain-tabs";
+import {
+  assessTransactionSource,
+  formatAge,
+  formatElapsedTime,
+  FreshnessBadge,
+  PolicyFreshnessLegend,
+} from "./policy-freshness";
 
 type FilterKey = CityKey | "all";
 
@@ -167,9 +174,24 @@ function SectionCard({ section }: { section: KnowledgeSection }) {
           <span>官方依据</span>
           <div>
             {section.sources.map((source) => (
-              <a href={source.url} key={source.url} target="_blank" rel="noreferrer">
-                {source.title}<b aria-hidden="true">↗</b>
-              </a>
+              (() => {
+                const freshness = assessTransactionSource(source, knowledgeMeta.asOfDate);
+                return (
+                  <div className="source-entry" key={source.url}>
+                    <div>
+                      <a href={source.url} target="_blank" rel="noreferrer">
+                        {source.title}<b aria-hidden="true">↗</b>
+                      </a>
+                      <FreshnessBadge assessment={freshness} />
+                    </div>
+                    <small>
+                      {formatAge(freshness.publicationAgeDays)}
+                      {" · 最近检查 "}
+                      {freshness.lastCheckedAt ?? "未标注"}
+                    </small>
+                  </div>
+                );
+              })()
             ))}
           </div>
         </div>
@@ -410,6 +432,8 @@ export function TransactionExplorer({
             <p>人工核验快照；远端自动监测基线仍待建立。政策辅助判断不替代主管机构正式核验。</p>
           </div>
 
+          <PolicyFreshnessLegend reviewWindowDays={180} />
+
           <section className="city-section" aria-labelledby="city-heading">
             <div className="section-intro">
               <span>城市政策包</span>
@@ -417,7 +441,17 @@ export function TransactionExplorer({
               <p>所有城市先应用全国通则；城市包允许不同层级，按限购空间、贷款地域、公积金中心、房产税试点和特殊住房分别组织。</p>
             </div>
             <div className="city-grid">
-              {cities.map((city) => (
+              {cities.map((city) => {
+                const cityFreshness = assessTransactionSource(
+                  {
+                    title: `${city.name}政策包`,
+                    url: "",
+                    publishedAt: city.effectiveFrom,
+                    lastCheckedAt: knowledgeMeta.asOfDate,
+                  },
+                  knowledgeMeta.asOfDate,
+                );
+                return (
                 <Fragment key={city.key}>
                   <button
                     className={`city-card ${filter === city.key ? "selected" : ""}`}
@@ -439,8 +473,8 @@ export function TransactionExplorer({
                       <div><dt>公积金最低首付</dt><dd>{city.providentDown}</dd></div>
                     </dl>
                     <div className="city-version">
-                      <code>{city.version}</code>
-                      <span>生效于 {city.effectiveFrom}</span>
+                      <div><code>{city.version}</code><FreshnessBadge assessment={cityFreshness} /></div>
+                      <span>本版生效 {city.effectiveFrom} · 距今 {formatElapsedTime(cityFreshness.publicationAgeDays)}</span>
                     </div>
                   </button>
 
@@ -462,7 +496,8 @@ export function TransactionExplorer({
                     </section>
                   ) : null}
                 </Fragment>
-              ))}
+                );
+              })}
             </div>
           </section>
 

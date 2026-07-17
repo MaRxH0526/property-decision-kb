@@ -38,6 +38,11 @@ test("server-renders the property decision portal and transaction tab", async ()
   assert.match(html, /4,159 项断言/);
   assert.match(html, /签合同不等于已经取得房屋产权/);
   assert.match(html, /15% 是全国底线/);
+  assert.match(html, /政策时效分级/);
+  assert.match(html, /当前已核验/);
+  assert.match(html, /当前但需关注/);
+  assert.match(html, /陈旧待复核/);
+  assert.match(html, /失效或历史/);
   assert.match(html, /搜索城市、资格、税率、首付或规则 ID/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape|react-loading-skeleton/i);
 });
@@ -98,6 +103,9 @@ test("ships the V3 31-city education knowledge base as lazy city packages", asyn
   assert.equal(summary.metrics.retrievalPackets, 349);
   assert.equal(summary.metrics.scenarioCityCombinations, 217);
   assert.equal(summary.extensionValidation.ok, true);
+  assert.equal(summary.freshnessModel.version, "policy-freshness-v1");
+  assert.deepEqual(summary.freshnessModel.gradeCounts, { A: 259, B: 97, C: 1, D: 84 });
+  assert.equal(Object.values(summary.freshnessModel.gradeCounts).reduce((sum, value) => sum + value, 0), 441);
 
   const beijingSummary = summary.cities.find((city) => city.name === "北京");
   assert.ok(beijingSummary);
@@ -112,6 +120,9 @@ test("ships the V3 31-city education knowledge base as lazy city packages", asyn
   assert.equal(beijing.retrieval.packets.length, beijingSummary.metrics.review_packets);
   assert.ok(beijing.retrieval.packets.every((item) => item.knowledgeStatus === "review_candidate"));
   assert.match(beijing.policies[0].sourceUrl, /^https?:\/\//);
+  assert.ok(beijing.policies.every((policy) => /^[ABCD]$/.test(policy.freshnessGrade)));
+  assert.ok(beijing.policies.every((policy) => policy.freshnessReason && policy.lastCheckedAt));
+  assert.ok(beijing.policies.every((policy) => policy.freshnessModelVersion === "policy-freshness-v1"));
   assert.ok(beijing.rules.every((rule) => rule.ruleText && rule.sourceLocator));
   assert.ok(beijing.schools.every((school) => school.publicStatusEvidence && school.sourceUrl));
 

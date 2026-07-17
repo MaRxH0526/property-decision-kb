@@ -1,3 +1,5 @@
+import type { CitationMode, FreshnessGrade } from "./policy-freshness";
+
 export type EducationSummaryMetrics = {
   districts: number;
   policy_documents: number;
@@ -55,6 +57,11 @@ export type EducationSummary = {
     reviewPackets: number;
     packetQuality: Record<string, number>;
     scenarioCityCombinations: number;
+  };
+  freshnessModel: {
+    version: string;
+    asOfDate: string;
+    gradeCounts: Record<FreshnessGrade, number>;
   };
   tests: { passed: number; total: number } | null;
   metrics: {
@@ -116,6 +123,14 @@ export type EducationPolicy = {
   sourceType: string;
   authorityLevel: number;
   sourceVerificationStatus: string;
+  sourceAccessedAt: string;
+  freshnessGrade: FreshnessGrade;
+  citationMode: CitationMode;
+  freshnessReason: string;
+  lastCheckedAt: string | null;
+  publicationAgeDays: number | null;
+  verificationAgeDays: number | null;
+  freshnessModelVersion: string;
   ruleCount: number;
   timelineCount: number;
 };
