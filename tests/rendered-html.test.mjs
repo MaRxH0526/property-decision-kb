@@ -80,7 +80,7 @@ test("removes starter preview assets and metadata", async () => {
   await assert.rejects(access(new URL("public/_sites-preview", templateRoot)));
 });
 
-test("ships the supplied 31-city education knowledge base as lazy city packages", async () => {
+test("ships the V3 31-city education knowledge base as lazy city packages", async () => {
   const summary = JSON.parse(await readFile(new URL("../app/generated/education-summary.json", import.meta.url), "utf8"));
   const educationFiles = (await readdir(new URL("../public/data/education", import.meta.url))).filter((name) => name.endsWith(".json"));
 
@@ -90,15 +90,34 @@ test("ships the supplied 31-city education knowledge base as lazy city packages"
   assert.equal(summary.metrics.policyDocuments, 441);
   assert.equal(summary.metrics.policyRules, 22038);
   assert.equal(summary.metrics.schools, 9212);
-  assert.equal(summary.release, "edu-schema-v2@2026-07-16");
+  assert.equal(summary.contentVersion, "V3");
+  assert.equal(summary.release, "edu-content-v3@2026-07-17");
+  assert.equal(summary.metrics.catchments, 468);
+  assert.equal(summary.metrics.officialCatchments, 457);
+  assert.equal(summary.metrics.reviewCatchments, 11);
+  assert.equal(summary.metrics.retrievalPackets, 349);
+  assert.equal(summary.metrics.scenarioCityCombinations, 217);
+  assert.equal(summary.extensionValidation.ok, true);
 
   const beijingSummary = summary.cities.find((city) => city.name === "北京");
   assert.ok(beijingSummary);
   const beijing = JSON.parse(await readFile(new URL(`../public/data/education/${beijingSummary.code}.json`, import.meta.url), "utf8"));
+  assert.equal(beijing.contentVersion, "V3");
+  assert.equal(beijing.schemaVersion, 2);
   assert.equal(beijing.policies.length, beijingSummary.metrics.policy_documents);
   assert.equal(beijing.rules.length, beijingSummary.metrics.rules);
   assert.equal(beijing.schools.length, beijingSummary.metrics.schools);
+  assert.equal(beijing.catchments.length, 11);
+  assert.ok(beijing.catchments.every((item) => item.knowledgeStatus === "needs_review"));
+  assert.equal(beijing.retrieval.packets.length, beijingSummary.metrics.review_packets);
+  assert.ok(beijing.retrieval.packets.every((item) => item.knowledgeStatus === "review_candidate"));
   assert.match(beijing.policies[0].sourceUrl, /^https?:\/\//);
   assert.ok(beijing.rules.every((rule) => rule.ruleText && rule.sourceLocator));
   assert.ok(beijing.schools.every((school) => school.publicStatusEvidence && school.sourceUrl));
+
+  const wuhanSummary = summary.cities.find((city) => city.name === "武汉");
+  const wuhan = JSON.parse(await readFile(new URL(`../public/data/education/${wuhanSummary.code}.json`, import.meta.url), "utf8"));
+  assert.equal(wuhan.catchments.length, 457);
+  assert.ok(wuhan.catchments.every((item) => item.knowledgeStatus === "verified_official"));
+  assert.equal(wuhan.scenarioCoverage.length, wuhanSummary.metrics.scenario_groups);
 });

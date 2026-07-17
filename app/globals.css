@@ -339,6 +339,7 @@ mark {
   font-family: var(--mono);
   font-size: 12px;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .release-pulse {
@@ -1591,7 +1592,7 @@ footer span {
 
 .coverage-summary {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 1px;
   margin-bottom: 16px;
   border: 1px solid var(--line-dark);
@@ -1618,6 +1619,13 @@ footer span {
 .coverage-summary span {
   color: var(--muted);
   font-size: 10px;
+}
+
+.coverage-subheading {
+  margin: 32px 0 0;
+  font-size: 18px;
+  font-weight: 560;
+  letter-spacing: -0.03em;
 }
 
 .education-boundary {

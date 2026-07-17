@@ -6,7 +6,9 @@ import { DomainTabs, type KnowledgeDomain } from "./domain-tabs";
 import type {
   EducationCityData,
   EducationCitySummary,
+  EducationCatchment,
   EducationPolicy,
+  EducationRetrievalPacket,
   EducationRule,
   EducationSchool,
   EducationSummary,
@@ -16,7 +18,7 @@ import type {
 const educationSummary = educationSummaryJson as unknown as EducationSummary;
 const publicBasePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
-type EducationView = "policies" | "rules" | "timelines" | "schools" | "coverage";
+type EducationView = "policies" | "rules" | "timelines" | "schools" | "catchments" | "evidence" | "coverage";
 type StageFilter = "all" | "primary" | "junior";
 
 const viewLabels: Record<EducationView, string> = {
@@ -24,7 +26,24 @@ const viewLabels: Record<EducationView, string> = {
   rules: "规则条款",
   timelines: "入学时间线",
   schools: "公办学校",
+  catchments: "对口小区",
+  evidence: "轻量证据包",
   coverage: "覆盖与缺口",
+};
+
+const catchmentMechanismLabels: Record<string, string> = {
+  service_area_registration: "服务范围登记",
+  single_school: "单校划片",
+  multi_school: "多校划片",
+  computer_lottery: "电脑派位",
+  allocation: "统筹分配",
+  unknown: "机制待确认",
+};
+
+const packetQualityLabels: Record<string, string> = {
+  high: "高质量候选",
+  medium: "中质量候选",
+  low: "低质量候选",
 };
 
 const ruleTypeLabels: Record<string, string> = {
@@ -202,6 +221,55 @@ function SchoolRecord({ school }: { school: EducationSchool }) {
   );
 }
 
+function CatchmentRecord({ catchment }: { catchment: EducationCatchment }) {
+  const isOfficial = catchment.knowledgeStatus === "verified_official";
+  return (
+    <article className="education-record catchment-record">
+      <div className="education-record-meta">
+        <span>{catchment.districtName}</span>
+        <span>{catchment.stageLabel}</span>
+        <span>{catchment.admissionYear}</span>
+        <span>{catchmentMechanismLabels[catchment.mechanism] ?? catchment.mechanism}</span>
+        <span className={isOfficial ? "status-good" : "status-warn"}>{isOfficial ? "官方来源已核" : "第三方来源待核"}</span>
+      </div>
+      <h4>{catchment.communityName} → {catchment.schoolName}{catchment.campusName ? `（${catchment.campusName}）` : ""}</h4>
+      {catchment.communityAlias ? <p>小区别名：{catchment.communityAlias}</p> : null}
+      <dl className="record-facts">
+        <div><dt>适用与限制</dt><dd>{catchment.eligibilityNote ?? "以原政策范围和资格审核为准"}</dd></div>
+        <div><dt>学校主表关联</dt><dd>{catchment.schoolId ? `school_id ${catchment.schoolId}` : "尚未关联，仅按来源学校名展示"}</dd></div>
+        <div><dt>来源定位</dt><dd>{catchment.sourceLocator}</dd></div>
+        <div><dt>置信度</dt><dd>{catchment.confidence.toFixed(2)} · 权威度 L{catchment.authorityLevel}</dd></div>
+      </dl>
+      <blockquote>{catchment.evidenceText}</blockquote>
+      {catchment.notes ? <div className="record-note">{catchment.notes}</div> : null}
+      {!isOfficial ? <div className="record-note">这条记录不得作为确定性对口结论；需以后续官方原件或学校通知复核。</div> : null}
+      <a className="record-source" href={catchment.sourceUrl} target="_blank" rel="noreferrer">
+        {catchment.sourcePublisher} · {catchment.sourceTitle}<b aria-hidden="true">↗</b>
+      </a>
+    </article>
+  );
+}
+
+function EvidencePacketRecord({ packet }: { packet: EducationRetrievalPacket }) {
+  return (
+    <article className="education-record evidence-packet-record">
+      <div className="education-record-meta">
+        <span>{packetQualityLabels[packet.quality] ?? packet.quality}</span>
+        <span>{packet.recommendedAction}</span>
+        <span className="status-warn">待审候选</span>
+      </div>
+      <h4>{packet.title}</h4>
+      <p>候选内容 {formatNumber(packet.candidateChars)} 字符 / 原文 {formatNumber(packet.sourceChars)} 字符，保留约 {Math.round(packet.reductionRatio * 100)}%。</p>
+      <details className="school-details">
+        <summary>查看候选证据行（{packet.evidenceLines.length} 条）</summary>
+        {packet.evidenceLines.map((line) => <div key={`${packet.policyId}-${line.lineNo}`}><strong>原文行 {line.lineNo}</strong><p>{line.text}</p></div>)}
+      </details>
+      <div className="record-note">这是V3为节省Agent上下文生成的检索与复核小包，不直接替代政策原文或结构化规则。</div>
+      <div className="record-trace"><span>来源引用：{packet.sourceRef}</span><span>policy_id：{packet.policyId}</span></div>
+    </article>
+  );
+}
+
 export function EducationExplorer({
   onDomainChange,
 }: {
@@ -292,11 +360,24 @@ export function EducationExplorer({
     textMatches(query, [item.name, item.aliases, item.districtName, item.address, item.overview, item.featuredTeaching]),
   ), [selectedData, stage, district, query]);
 
+  const filteredCatchments = useMemo(() => (selectedData?.catchments ?? []).filter((item) =>
+    stageMatches(item.stage, stage) &&
+    (district === "all" || item.districtCode === district) &&
+    textMatches(query, [item.schoolName, item.campusName, item.communityName, item.communityAlias, item.districtName, item.eligibilityNote]),
+  ), [selectedData, stage, district, query]);
+
+  const filteredEvidencePackets = useMemo(() => (selectedData?.retrieval.packets ?? []).filter((item) =>
+    (district === "all" || item.districtCode === district) &&
+    textMatches(query, [item.title, item.sourceKind, item.sourceRef, packetQualityLabels[item.quality], ...item.evidenceLines.map((line) => line.text)]),
+  ), [selectedData, district, query]);
+
   const currentCount = view === "policies" ? filteredPolicies.length
     : view === "rules" ? filteredRules.length
       : view === "timelines" ? filteredTimelines.length
         : view === "schools" ? filteredSchools.length
-          : selectedData?.districts.length ?? 0;
+          : view === "catchments" ? filteredCatchments.length
+            : view === "evidence" ? filteredEvidencePackets.length
+              : selectedData?.districts.length ?? 0;
 
   return (
     <div className="app-shell education-shell">
@@ -315,7 +396,7 @@ export function EducationExplorer({
             value={query}
             disabled={!selectedCityCode}
             onChange={(event) => { setQuery(event.target.value); setVisibleLimit(24); }}
-            placeholder={selectedSummary ? `搜索${selectedSummary.name}政策、规则或学校` : "先展开城市，再检索教育知识"}
+            placeholder={selectedSummary ? `搜索${selectedSummary.name}政策、规则、学校或小区` : "先展开城市，再检索教育知识"}
             aria-label="搜索当前城市教育知识库"
           />
           {query ? <button className="clear-search" onClick={() => { setQuery(""); setVisibleLimit(24); }} aria-label="清除搜索">×</button> : <kbd>/</kbd>}
@@ -351,8 +432,8 @@ export function EducationExplorer({
           </div>
           <div className="sidebar-status">
             <span>数据状态</span>
-            <strong>{educationSummary.validated ? "最终校验通过" : "校验未通过"}</strong>
-            <small>只读导出 · 不联网补数</small>
+            <strong>{educationSummary.validated ? "V3基础与扩展校验通过" : "V3校验未通过"}</strong>
+            <small>仅使用V3 · 只读导出</small>
           </div>
         </aside>
 
@@ -360,28 +441,28 @@ export function EducationExplorer({
           <section className="hero education-hero">
             <div className="hero-copy">
               <span className="overline">EDUCATION POLICY & PUBLIC SCHOOL KB</span>
-              <h1>教育政策与公办学校，<br />按证据拆开看。</h1>
-              <p>完整呈现你提供的31城义务教育知识库：入学政策、结构化规则、时间线、公办学校与覆盖缺口。网页不新增事实，空值也不会被猜测补齐。</p>
+              <h1>教育政策、学校与对口范围，<br />按证据拆开看。</h1>
+              <p>当前唯一数据源为V3：保留31城政策、规则、时间线和公办学校，并增加学校—小区关系、咨询场景索引及面向Agent的轻量证据包。</p>
             </div>
             <div className="hero-facts">
-              <div><strong>{educationSummary.metrics.cities}</strong><span>目标城市</span></div>
               <div><strong>{formatNumber(educationSummary.metrics.policyDocuments)}</strong><span>政策文档</span></div>
               <div><strong>{formatNumber(educationSummary.metrics.policyRules)}</strong><span>结构化规则</span></div>
               <div><strong>{formatNumber(educationSummary.metrics.schools)}</strong><span>公办学校</span></div>
+              <div><strong>{formatNumber(educationSummary.metrics.catchments)}</strong><span>学校对口记录</span></div>
             </div>
           </section>
 
           <div className="freshness-strip">
             <div><span className="status-dot status-dot-good" /><span>数据库快照</span><strong>{educationSummary.asOfDate}</strong></div>
-            <div><span className="status-dot status-dot-neutral" /><span>结构版本</span><strong>schema v{educationSummary.schemaVersion}</strong></div>
-            <div><span className="status-dot status-dot-good" /><span>自动化校验</span><strong>{educationSummary.tests ? `${educationSummary.tests.passed}/${educationSummary.tests.total}` : "passed"}</strong></div>
-            <p>来源仅为 education_kb_project 提供的数据库、种子和验收报告。</p>
+            <div><span className="status-dot status-dot-neutral" /><span>内容 / 结构</span><strong>{educationSummary.contentVersion} · schema v{educationSummary.schemaVersion}</strong></div>
+            <div><span className="status-dot status-dot-good" /><span>V3扩展校验</span><strong>{educationSummary.extensionValidation.ok ? "passed" : "failed"}</strong></div>
+            <p>仅使用 education_kb_project V3；基础事实与待审候选严格区分。</p>
           </div>
 
           <section className="education-method" aria-label="教育知识库结构">
             <article><span>01 / POLICY</span><h2>入学政策</h2><p>按城市、区县、学段和年份组织政策文件，再关联资格、户籍、住房、材料、排序与派位规则。</p></article>
-            <article><span>02 / SCHOOL</span><h2>公办学校</h2><p>学校身份、学段、别名与详情独立建模；公办性质和事实字段均保留来源。</p></article>
-            <article><span>03 / EVIDENCE</span><h2>证据与缺口</h2><p>明确区分完整覆盖、动态查询和往年回退；没有可靠来源的字段保持为空。</p></article>
+            <article><span>02 / SCHOOL</span><h2>学校与对口</h2><p>学校身份、学段和详情独立建模；V3新增逐小区服务范围，并明确官方已核与第三方待核。</p></article>
+            <article><span>03 / AGENT PACKET</span><h2>轻量证据包</h2><p>31城349个候选小包用于减少Agent上下文；高、中、低质量与复核动作均保留，不冒充最终事实。</p></article>
           </section>
 
           <section className="city-section education-city-section" aria-labelledby="education-city-heading">
@@ -404,7 +485,7 @@ export function EducationExplorer({
                     <span className="education-city-toggle">{selectedCityCode === city.code ? "×" : "+"}</span>
                     <h3>{city.name}</h3>
                     <p>{city.metrics.policy_documents} 政策 · {formatNumber(city.metrics.rules)} 规则</p>
-                    <small>{formatNumber(city.metrics.schools)} 所公办学校</small>
+                    <small>{formatNumber(city.metrics.schools)} 学校 · {city.metrics.catchments} 对口 · {city.metrics.review_packets} 证据包</small>
                   </button>
 
                   {selectedCityCode === city.code ? (
@@ -413,7 +494,7 @@ export function EducationExplorer({
                         <div>
                           <span>已展开 · {city.name}教育知识库包</span>
                           <h2>{city.officialName}</h2>
-                          <p>{city.metrics.policy_documents} 份政策 · {formatNumber(city.metrics.rules)} 条规则 · {formatNumber(city.metrics.schools)} 所学校</p>
+                          <p>{city.metrics.policy_documents} 份政策 · {formatNumber(city.metrics.rules)} 条规则 · {formatNumber(city.metrics.schools)} 所学校 · {city.metrics.catchments} 条对口记录 · {city.metrics.review_packets} 个轻量证据包</p>
                         </div>
                         <button onClick={() => setSelectedCityCode(null)}>收起知识包</button>
                       </div>
@@ -429,14 +510,16 @@ export function EducationExplorer({
                                 : key === "rules" ? filteredRules.length
                                   : key === "timelines" ? filteredTimelines.length
                                     : key === "schools" ? filteredSchools.length
-                                      : selectedData.districts.length;
+                                      : key === "catchments" ? filteredCatchments.length
+                                        : key === "evidence" ? filteredEvidencePackets.length
+                                          : selectedData.districts.length;
                               return <button key={key} className={view === key ? "active" : ""} onClick={() => { setView(key); setVisibleLimit(24); }}>{viewLabels[key]}<small>{formatNumber(count)}</small></button>;
                             })}
                           </div>
 
                           {view !== "coverage" ? (
                             <div className="education-filters">
-                              <label>学段<select value={stage} onChange={(event) => { setStage(event.target.value as StageFilter); setVisibleLimit(24); }}><option value="all">全部学段</option><option value="primary">小学</option><option value="junior">初中</option></select></label>
+                              {view !== "evidence" ? <label>学段<select value={stage} onChange={(event) => { setStage(event.target.value as StageFilter); setVisibleLimit(24); }}><option value="all">全部学段</option><option value="primary">小学</option><option value="junior">初中</option></select></label> : null}
                               <label>区域<select value={district} onChange={(event) => { setDistrict(event.target.value); setVisibleLimit(24); }}><option value="all">全市 + 全部区县</option>{selectedData.districts.map((item) => <option key={item.code} value={item.code}>{item.name}</option>)}</select></label>
                               {view === "rules" ? <label>规则类型<select value={ruleType} onChange={(event) => { setRuleType(event.target.value); setVisibleLimit(24); }}><option value="all">全部规则类型</option>{Object.entries(ruleTypeLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label> : null}
                               <div className="filter-result"><strong>{formatNumber(currentCount)}</strong><span>条匹配</span></div>
@@ -448,15 +531,22 @@ export function EducationExplorer({
                             {view === "rules" ? filteredRules.slice(0, visibleLimit).map((item) => <RuleRecord rule={item} key={item.id} />) : null}
                             {view === "timelines" ? filteredTimelines.slice(0, visibleLimit).map((item) => <TimelineRecord timeline={item} key={item.id} />) : null}
                             {view === "schools" ? filteredSchools.slice(0, visibleLimit).map((item) => <SchoolRecord school={item} key={item.id} />) : null}
+                            {view === "catchments" ? filteredCatchments.slice(0, visibleLimit).map((item) => <CatchmentRecord catchment={item} key={item.id} />) : null}
+                            {view === "evidence" ? filteredEvidencePackets.slice(0, visibleLimit).map((item) => <EvidencePacketRecord packet={item} key={`${item.policyId}-${item.sourceRef}`} />) : null}
                             {view === "coverage" ? (
                               <div className="coverage-panel">
                                 <div className="coverage-summary">
                                   <article><strong>{city.metrics.complete_district_stage}/ {city.metrics.districts * 2}</strong><span>完整区级政策覆盖</span></article>
                                   <article><strong>{city.metrics.sourced_district_stage}/ {city.metrics.districts * 2}</strong><span>有区级来源覆盖</span></article>
                                   <article><strong>{city.metrics.school_districts}/ {city.metrics.districts}</strong><span>有学校记录区县</span></article>
+                                  <article><strong>{city.metrics.catchments}</strong><span>学校对口记录</span></article>
                                 </div>
                                 <div className="table-wrap" tabIndex={0} aria-label={`${city.name}区县覆盖表`}>
-                                  <table><thead><tr><th>法定区县</th><th>政策文档</th><th>规则</th><th>时间线</th><th>学校</th><th>小学 / 初中记录</th></tr></thead><tbody>{selectedData.districts.map((item) => <tr key={item.code}><td>{item.name}<br /><code>{item.code}</code></td><td>{item.policyDocuments}</td><td>{item.rules}</td><td>{item.timelines}</td><td>{item.schools}</td><td>{item.primary} / {item.junior}</td></tr>)}</tbody></table>
+                                  <table><thead><tr><th>法定区县</th><th>政策文档</th><th>规则</th><th>时间线</th><th>学校</th><th>对口记录</th><th>小学 / 初中记录</th></tr></thead><tbody>{selectedData.districts.map((item) => <tr key={item.code}><td>{item.name}<br /><code>{item.code}</code></td><td>{item.policyDocuments}</td><td>{item.rules}</td><td>{item.timelines}</td><td>{item.schools}</td><td>{item.catchments}</td><td>{item.primary} / {item.junior}</td></tr>)}</tbody></table>
+                                </div>
+                                <h3 className="coverage-subheading">咨询场景规则索引</h3>
+                                <div className="table-wrap" tabIndex={0} aria-label={`${city.name}咨询场景覆盖表`}>
+                                  <table><thead><tr><th>家庭咨询场景</th><th>规则行</th><th>关联政策</th><th>规则类型</th><th>样例</th></tr></thead><tbody>{selectedData.scenarioCoverage.map((item) => <tr key={item.scenario}><td>{item.scenarioLabel}<br /><code>{item.scenario}</code></td><td>{item.ruleRows}</td><td>{item.policyCount}</td><td>{Object.entries(item.ruleTypeCounts).map(([key, value]) => `${ruleTypeLabels[key] ?? key} ${value}`).join(" · ") || "缺口"}</td><td>{item.sample ?? "当前没有已归类规则"}</td></tr>)}</tbody></table>
                                 </div>
                                 <div className="note-box">{educationSummary.nullSemantics} 城市—学段覆盖完成不等于每个区县、每所学校和每个详情字段均已穷尽。</div>
                               </div>
@@ -475,18 +565,19 @@ export function EducationExplorer({
           </section>
 
           <section className="education-boundary">
-            <div><span>数据边界</span><h2>完成的是31城基线，不是全部区县穷举。</h2></div>
+            <div><span>V3数据边界</span><h2>基础事实、对口记录与待审证据，状态不能混用。</h2></div>
             <ul>
               <li>可用城市—学段覆盖 {educationSummary.metrics.operationalCityStageCoverage}/{educationSummary.metrics.expectedCityStageCoverage}；严格当年现行覆盖 {educationSummary.metrics.strictCurrentCityStageCoverage}/{educationSummary.metrics.expectedCityStageCoverage}。</li>
               <li>完整区级政策覆盖 {educationSummary.metrics.completeDistrictStageCoverage}/{educationSummary.metrics.expectedDistrictStageCoverage}；学校区县—学段覆盖 {educationSummary.metrics.schoolDistrictStageCoverage}/{educationSummary.metrics.expectedDistrictStageCoverage}。</li>
-              <li>海口小学、初中使用2025年官方文件回退，数据库保留真实年份与 fallback 状态。</li>
+              <li>{educationSummary.metrics.officialCatchments}条对口记录来自高权威官方来源；{educationSummary.metrics.reviewCatchments}条第三方记录保持待核验，不能用于确定性对口回答。</li>
+              <li>{educationSummary.metrics.retrievalPackets}个轻量证据包用于Agent检索与复核，只有{educationSummary.metrics.highQualityPackets}个被标记为高质量候选。</li>
             </ul>
           </section>
         </main>
       </div>
 
       <footer>
-        <div><strong>房产决策知识库</strong><span>教育政策 · 31 城义务教育与公办学校</span></div>
+        <div><strong>房产决策知识库</strong><span>教育政策V3 · 31城义务教育、学校与对口范围</span></div>
         <div><span>{educationSummary.release}</span><span>截至 {educationSummary.asOfDate}</span></div>
       </footer>
     </div>

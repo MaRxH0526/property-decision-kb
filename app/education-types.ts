@@ -14,6 +14,15 @@ export type EducationSummaryMetrics = {
   school_districts: number;
   with_address: number;
   with_website: number;
+  catchments: number;
+  official_catchments: number;
+  review_catchments: number;
+  catchment_schools: number;
+  review_packets: number;
+  high_quality_packets: number;
+  medium_quality_packets: number;
+  low_quality_packets: number;
+  scenario_groups: number;
 };
 
 export type EducationCitySummary = {
@@ -27,11 +36,26 @@ export type EducationCitySummary = {
 export type EducationSummary = {
   title: string;
   release: string;
+  contentVersion: "V3";
   schemaVersion: number;
   asOfDate: string;
   exportedAt: string;
   validationGeneratedAt: string;
   validated: boolean;
+  baseValidation: { ok: boolean; generatedAt: string };
+  extensionValidation: {
+    ok: boolean;
+    scope: string;
+    catchments: number;
+    officialCatchments: number;
+    reviewCatchments: number;
+    catchmentsMissingEvidence: number;
+    unresolvedSchoolIds: number;
+    packetCities: number;
+    reviewPackets: number;
+    packetQuality: Record<string, number>;
+    scenarioCityCombinations: number;
+  };
   tests: { passed: number; total: number } | null;
   metrics: {
     cities: number;
@@ -50,6 +74,15 @@ export type EducationSummary = {
     aliases: number;
     claims: number;
     schoolDistrictStageCoverage: number;
+    catchments: number;
+    officialCatchments: number;
+    reviewCatchments: number;
+    catchmentCities: number;
+    retrievalPackets: number;
+    highQualityPackets: number;
+    mediumQualityPackets: number;
+    lowQualityPackets: number;
+    scenarioCityCombinations: number;
   };
   warnings: string[];
   sourceFiles: string[];
@@ -157,6 +190,60 @@ export type EducationSchool = {
   aliases: string | null;
 };
 
+export type EducationCatchment = {
+  id: number;
+  schoolId: number | null;
+  districtCode: string;
+  districtName: string;
+  schoolName: string;
+  schoolNormalizedName: string;
+  campusName: string | null;
+  admissionYear: number;
+  stage: "primary" | "junior";
+  stageLabel: string;
+  communityName: string;
+  communityAlias: string | null;
+  addressText: string | null;
+  mechanism: string;
+  eligibilityNote: string | null;
+  evidenceText: string;
+  sourceLocator: string;
+  verifiedAt: string;
+  confidence: number;
+  notes: string | null;
+  sourceTitle: string;
+  sourceUrl: string;
+  sourcePublisher: string;
+  sourceType: string;
+  authorityLevel: number;
+  knowledgeStatus: "verified_official" | "needs_review";
+};
+
+export type EducationRetrievalPacket = {
+  policyId: number;
+  cityCode: string;
+  districtCode: string | null;
+  title: string;
+  sourceKind: string;
+  sourceRef: string;
+  sourceChars: number;
+  candidateChars: number;
+  reductionRatio: number;
+  quality: "high" | "medium" | "low";
+  recommendedAction: string;
+  knowledgeStatus: "review_candidate";
+  evidenceLines: Array<{ lineNo: number; text: string }>;
+};
+
+export type EducationScenarioCoverage = {
+  scenario: string;
+  scenarioLabel: string;
+  ruleRows: number;
+  policyCount: number;
+  ruleTypeCounts: Record<string, number>;
+  sample: string | null;
+};
+
 export type EducationDistrict = {
   code: string;
   name: string;
@@ -167,10 +254,12 @@ export type EducationDistrict = {
   schools: number;
   primary: number;
   junior: number;
+  catchments: number;
 };
 
 export type EducationCityData = {
   schemaVersion: number;
+  contentVersion: "V3";
   exportedAt: string;
   city: EducationCitySummary;
   districts: EducationDistrict[];
@@ -178,4 +267,20 @@ export type EducationCityData = {
   rules: EducationRule[];
   timelines: EducationTimeline[];
   schools: EducationSchool[];
+  catchments: EducationCatchment[];
+  retrieval: {
+    status: "review_candidates_not_final_facts";
+    summary: {
+      rawPackets: number;
+      usablePackets: number;
+      reviewPackets: number;
+      reviewSourceChars: number;
+      reviewCandidateChars: number;
+      reviewRatio: number;
+      qualityCounts: Record<string, number>;
+      actionCounts: Record<string, number>;
+    };
+    packets: EducationRetrievalPacket[];
+  };
+  scenarioCoverage: EducationScenarioCoverage[];
 };

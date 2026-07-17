@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-"""Export the supplied education SQLite knowledge base for the static website.
+"""Export the V3 education knowledge base for the static website.
 
 This script is deliberately read-only. It does not crawl, enrich, or rewrite facts;
-it only converts the two source databases and their validation report into a small
+it converts the V3 databases, review packets and coverage indexes into a small
 summary plus one lazy-loaded JSON payload per city.
 """
 
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import re
 import sqlite3
@@ -37,6 +38,16 @@ def metadata(connection: sqlite3.Connection) -> dict[str, str]:
     return {row[0]: row[1] for row in connection.execute("SELECT key, value FROM metadata")}
 
 
+def table_exists(connection: sqlite3.Connection, table_name: str) -> bool:
+    return bool(
+        scalar(
+            connection,
+            "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=?",
+            (table_name,),
+        )
+    )
+
+
 def open_read_only(path: Path) -> sqlite3.Connection:
     connection = sqlite3.connect(f"file:{path.as_posix()}?mode=ro", uri=True)
     connection.row_factory = sqlite3.Row
@@ -58,6 +69,152 @@ def write_json(path: Path, payload: Any) -> None:
         json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n",
         encoding="utf-8",
     )
+
+
+def read_jsonl(path: Path) -> list[dict[str, Any]]:
+    if not path.exists():
+        return []
+    payloads: list[dict[str, Any]] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if line.strip():
+            payloads.append(json.loads(line))
+    return payloads
+
+
+def load_extraction_index(path: Path) -> dict[str, dict[str, Any]]:
+    if not path.exists():
+        return {}
+    result: dict[str, dict[str, Any]] = {}
+    with path.open(encoding="utf-8-sig", newline="") as handle:
+        for row in csv.DictReader(handle):
+            result[row["city_code"]] = {
+                "rawPackets": int(row["raw_packets"]),
+                "usablePackets": int(row["usable_packets"]),
+                "reviewPackets": int(row["review_packets"]),
+                "reviewSourceChars": int(row["review_source_chars"]),
+                "reviewCandidateChars": int(row["review_candidate_chars"]),
+                "reviewRatio": float(row["review_ratio"]),
+                "qualityCounts": json.loads(row["quality_counts"]),
+                "actionCounts": json.loads(row["action_counts"]),
+            }
+    return result
+
+
+def load_scenario_index(path: Path) -> dict[str, list[dict[str, Any]]]:
+    result: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    if not path.exists():
+        return result
+    with path.open(encoding="utf-8-sig", newline="") as handle:
+        for row in csv.DictReader(handle):
+            result[row["city_code"]].append(
+                {
+                    "scenario": row["scenario"],
+                    "scenarioLabel": row["scenario_label"],
+                    "ruleRows": int(row["rule_rows"]),
+                    "policyCount": int(row["policy_count"]),
+                    "ruleTypeCounts": json.loads(row["rule_type_counts"]),
+                    "sample": compact(row["sample"]),
+                }
+            )
+    return result
+
+
+def export_retrieval_packets(source_root: Path, city_code: str) -> list[dict[str, Any]]:
+    path = (
+        source_root
+        / "knowledge_base"
+        / "extraction_packets"
+        / "catchment_scope"
+        / city_code
+        / f"{city_code}_catchment_review_packets.jsonl"
+    )
+    packets = []
+    for packet in read_jsonl(path):
+        packets.append(
+            {
+                "policyId": packet["policy_id"],
+                "cityCode": packet["city_code"],
+                "districtCode": packet.get("district_code"),
+                "title": compact(packet["title"]),
+                "sourceKind": packet["source_kind"],
+                "sourceRef": packet["source_ref"],
+                "sourceChars": packet["source_chars"],
+                "candidateChars": packet["candidate_chars"],
+                "reductionRatio": packet["reduction_ratio"],
+                "quality": packet["quality"],
+                "recommendedAction": packet["recommended_action"],
+                "knowledgeStatus": "review_candidate",
+                "evidenceLines": [
+                    {"lineNo": item["line_no"], "text": compact(item["text"])}
+                    for item in packet["evidence_lines"]
+                ],
+            }
+        )
+    return packets
+
+
+def validate_v3_extensions(
+    school_db: sqlite3.Connection,
+    extraction_index: dict[str, dict[str, Any]],
+    scenario_index: dict[str, list[dict[str, Any]]],
+) -> dict[str, Any]:
+    has_catchments = table_exists(school_db, "school_catchment_communities")
+    catchments = scalar(school_db, "SELECT COUNT(*) FROM school_catchment_communities") if has_catchments else 0
+    catchments_missing_evidence = (
+        scalar(
+            school_db,
+            """
+            SELECT COUNT(*) FROM school_catchment_communities
+            WHERE trim(evidence_text)='' OR trim(source_locator)='' OR trim(verified_at)=''
+            """,
+        )
+        if has_catchments
+        else 0
+    )
+    unresolved_school_ids = (
+        scalar(school_db, "SELECT COUNT(*) FROM school_catchment_communities WHERE school_id IS NULL")
+        if has_catchments
+        else 0
+    )
+    official_catchments = (
+        scalar(
+            school_db,
+            """
+            SELECT COUNT(*) FROM school_catchment_communities c
+            JOIN sources s ON s.source_id=c.source_id
+            WHERE s.authority_level>=5 AND c.confidence>=0.9
+            """,
+        )
+        if has_catchments
+        else 0
+    )
+    review_catchments = catchments - official_catchments
+    review_packets = sum(item["reviewPackets"] for item in extraction_index.values())
+    quality_counts: dict[str, int] = defaultdict(int)
+    for item in extraction_index.values():
+        for quality, count in item["qualityCounts"].items():
+            quality_counts[quality] += count
+    result = {
+        "ok": bool(
+            has_catchments
+            and school_db.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
+            and not school_db.execute("PRAGMA foreign_key_check").fetchall()
+            and catchments_missing_evidence == 0
+            and len(extraction_index) == 31
+            and review_packets == 349
+        ),
+        "scope": "V3新增对口小区表、31城轻量证据包和咨询场景索引",
+        "catchments": catchments,
+        "officialCatchments": official_catchments,
+        "reviewCatchments": review_catchments,
+        "catchmentsMissingEvidence": catchments_missing_evidence,
+        "unresolvedSchoolIds": unresolved_school_ids,
+        "packetCities": len(extraction_index),
+        "reviewPackets": review_packets,
+        "packetQuality": dict(quality_counts),
+        "scenarioCityCombinations": sum(len(items) for items in scenario_index.values()),
+    }
+    return result
 
 
 def stage_sql(column: str = "stage") -> str:
@@ -120,7 +277,25 @@ def coverage_metrics(policy_db: sqlite3.Connection, school_db: sqlite3.Connectio
         "SELECT COUNT(*) FROM regions WHERE city_code=? AND region_level='district' AND is_current=1",
         (city_code,),
     )
-    return {"districts": district_count, **policy, **school}
+    catchment = {"catchments": 0, "official_catchments": 0, "review_catchments": 0, "catchment_schools": 0}
+    if table_exists(school_db, "school_catchment_communities"):
+        catchment.update(
+            dict(
+                school_db.execute(
+                    """
+                    SELECT COUNT(*) AS catchments,
+                           SUM(CASE WHEN so.authority_level>=5 AND c.confidence>=0.9 THEN 1 ELSE 0 END) AS official_catchments,
+                           SUM(CASE WHEN so.authority_level<5 OR c.confidence<0.9 THEN 1 ELSE 0 END) AS review_catchments,
+                           COUNT(DISTINCT c.school_normalized_name) AS catchment_schools
+                    FROM school_catchment_communities c
+                    JOIN sources so ON so.source_id=c.source_id
+                    WHERE c.city_code=?
+                    """,
+                    (city_code,),
+                ).fetchone()
+            )
+        )
+    return {"districts": district_count, **policy, **school, **catchment}
 
 
 def city_payload(
@@ -129,6 +304,9 @@ def city_payload(
     city: dict[str, Any],
     summary_metrics: dict[str, Any],
     exported_at: str,
+    retrieval_packets: list[dict[str, Any]],
+    retrieval_summary: dict[str, Any],
+    scenario_coverage: list[dict[str, Any]],
 ) -> dict[str, Any]:
     code = city["code"]
 
@@ -242,8 +420,39 @@ def city_payload(
         for key, value in list(school.items()):
             school[key] = compact(value)
 
+    catchments: list[dict[str, Any]] = []
+    if table_exists(school_db, "school_catchment_communities"):
+        catchments = rows(
+            school_db,
+            f"""
+            SELECT c.catchment_id AS id, c.school_id AS schoolId,
+                   c.district_code AS districtCode, d.name AS districtName,
+                   c.school_name AS schoolName, c.school_normalized_name AS schoolNormalizedName,
+                   c.campus_name AS campusName, c.admission_year AS admissionYear,
+                   c.stage, {stage_sql('c.stage')} AS stageLabel,
+                   c.community_name AS communityName, c.community_alias AS communityAlias,
+                   c.address_text AS addressText, c.mechanism,
+                   c.eligibility_note AS eligibilityNote, c.evidence_text AS evidenceText,
+                   c.source_locator AS sourceLocator, c.verified_at AS verifiedAt,
+                   c.confidence, c.notes, so.title AS sourceTitle, so.url AS sourceUrl,
+                   so.publisher AS sourcePublisher, so.source_type AS sourceType,
+                   so.authority_level AS authorityLevel,
+                   CASE WHEN so.authority_level>=5 AND c.confidence>=0.9
+                        THEN 'verified_official' ELSE 'needs_review' END AS knowledgeStatus
+            FROM school_catchment_communities c
+            JOIN regions d ON d.region_code=c.district_code
+            JOIN sources so ON so.source_id=c.source_id
+            WHERE c.city_code=?
+            ORDER BY c.admission_year DESC, d.name, c.school_name, c.community_name
+            """,
+            (code,),
+        )
+        for catchment in catchments:
+            for key, value in list(catchment.items()):
+                catchment[key] = compact(value)
+
     policy_districts: dict[str, dict[str, int]] = defaultdict(lambda: {"policyDocuments": 0, "rules": 0, "timelines": 0})
-    school_districts: dict[str, dict[str, int]] = defaultdict(lambda: {"schools": 0, "primary": 0, "junior": 0})
+    school_districts: dict[str, dict[str, int]] = defaultdict(lambda: {"schools": 0, "primary": 0, "junior": 0, "catchments": 0})
     for policy in policies:
         if policy["districtCode"]:
             policy_districts[policy["districtCode"]]["policyDocuments"] += 1
@@ -258,6 +467,8 @@ def city_payload(
         item["schools"] += 1
         item["primary"] += int(school["hasPrimary"] or 0)
         item["junior"] += int(school["hasJunior"] or 0)
+    for catchment in catchments:
+        school_districts[catchment["districtCode"]]["catchments"] += 1
 
     districts = rows(
         policy_db,
@@ -273,7 +484,8 @@ def city_payload(
         district.update(school_districts[district["code"]])
 
     return {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
+        "contentVersion": "V3",
         "exportedAt": exported_at,
         "city": {**city, "metrics": summary_metrics},
         "districts": districts,
@@ -281,6 +493,13 @@ def city_payload(
         "rules": rules,
         "timelines": timelines,
         "schools": schools,
+        "catchments": catchments,
+        "retrieval": {
+            "status": "review_candidates_not_final_facts",
+            "summary": retrieval_summary,
+            "packets": retrieval_packets,
+        },
+        "scenarioCoverage": scenario_coverage,
     }
 
 
@@ -291,7 +510,7 @@ def main() -> None:
         "--source-root",
         type=Path,
         default=script_root.parent / "education_kb_project",
-        help="Path to the supplied education_kb_project directory",
+        help="Path to the canonical V3 education_kb_project directory",
     )
     parser.add_argument("--site-root", type=Path, default=script_root)
     args = parser.parse_args()
@@ -302,18 +521,35 @@ def main() -> None:
     school_path = source_root / "data" / "public_schools.sqlite3"
     validation_path = source_root / "reports" / "validation_report.json"
     completion_path = source_root / "reports" / "completion_summary_2026-07-16.md"
-    for path in (policy_path, school_path, validation_path, completion_path):
+    version_path = source_root / "VERSION.json"
+    extraction_index_path = source_root / "reports" / "extraction_packet_index_2026-07-17.csv"
+    scenario_index_path = source_root / "reports" / "consulting_scenario_coverage_2026-07-17.csv"
+    for path in (
+        policy_path,
+        school_path,
+        validation_path,
+        completion_path,
+        version_path,
+        extraction_index_path,
+        scenario_index_path,
+    ):
         if not path.exists():
             raise SystemExit(f"Required source file is missing: {path}")
 
     validation = json.loads(validation_path.read_text(encoding="utf-8"))
+    version = json.loads(version_path.read_text(encoding="utf-8"))
+    if version.get("contentVersion") != "V3":
+        raise SystemExit(f"Only V3 is supported; found {version.get('contentVersion')!r}")
     completion = completion_path.read_text(encoding="utf-8")
     test_match = re.search(r"(\d+)/(\d+)通过", completion)
+    extraction_index = load_extraction_index(extraction_index_path)
+    scenario_index = load_scenario_index(scenario_index_path)
 
     with open_read_only(policy_path) as policy_db, open_read_only(school_path) as school_db:
         policy_meta = metadata(policy_db)
         school_meta = metadata(school_db)
         exported_at = max(policy_meta["updated_at"], school_meta["updated_at"])
+        extension_validation = validate_v3_extensions(school_db, extraction_index, scenario_index)
         cities = rows(
             policy_db,
             """
@@ -328,18 +564,31 @@ def main() -> None:
         summaries: list[dict[str, Any]] = []
         for city in cities:
             metrics = coverage_metrics(policy_db, school_db, city["code"])
+            packet_summary = extraction_index.get(city["code"], {})
+            metrics.update(
+                {
+                    "review_packets": packet_summary.get("reviewPackets", 0),
+                    "high_quality_packets": packet_summary.get("qualityCounts", {}).get("high", 0),
+                    "medium_quality_packets": packet_summary.get("qualityCounts", {}).get("medium", 0),
+                    "low_quality_packets": packet_summary.get("qualityCounts", {}).get("low", 0),
+                    "scenario_groups": len(scenario_index.get(city["code"], [])),
+                }
+            )
             summaries.append({**city, "metrics": metrics})
 
         policy_report = validation["databases"]["policies"]
         school_report = validation["databases"]["schools"]
         summary = {
-            "title": "城市义务教育政策与公办学校知识库",
-            "release": f"edu-schema-v{policy_meta['schema_version']}@{exported_at[:10]}",
+            "title": "城市义务教育政策、学校与对口范围知识库",
+            "release": version["release"],
+            "contentVersion": version["contentVersion"],
             "schemaVersion": int(policy_meta["schema_version"]),
-            "asOfDate": exported_at[:10],
+            "asOfDate": version["asOfDate"],
             "exportedAt": exported_at,
             "validationGeneratedAt": validation["generated_at"],
-            "validated": bool(validation["ok"]),
+            "validated": bool(validation["ok"] and extension_validation["ok"]),
+            "baseValidation": {"ok": bool(validation["ok"]), "generatedAt": validation["generated_at"]},
+            "extensionValidation": extension_validation,
             "tests": {"passed": int(test_match.group(1)), "total": int(test_match.group(2))} if test_match else None,
             "metrics": {
                 "cities": validation["target_city_count"],
@@ -358,13 +607,31 @@ def main() -> None:
                 "aliases": school_report["aliases"],
                 "claims": school_report["claims"],
                 "schoolDistrictStageCoverage": school_report["district_stage_coverage"],
+                "catchments": extension_validation["catchments"],
+                "officialCatchments": extension_validation["officialCatchments"],
+                "reviewCatchments": extension_validation["reviewCatchments"],
+                "catchmentCities": sum(1 for item in summaries if item["metrics"]["catchments"]),
+                "retrievalPackets": extension_validation["reviewPackets"],
+                "highQualityPackets": extension_validation["packetQuality"].get("high", 0),
+                "mediumQualityPackets": extension_validation["packetQuality"].get("medium", 0),
+                "lowQualityPackets": extension_validation["packetQuality"].get("low", 0),
+                "scenarioCityCombinations": extension_validation["scenarioCityCombinations"],
             },
-            "warnings": validation["warnings"],
+            "warnings": [
+                *validation["warnings"],
+                "V3: 468条学校对口/服务范围记录尚未关联school_id；网页按学校名和证据原样展示。",
+                "V3: 北京11条对口记录来自第三方来源，保持needs_review，不作为确定性对口结论。",
+                "V3: 349个轻量证据包是检索与复核候选，不直接替代政策事实。",
+            ],
             "sourceFiles": [
+                "VERSION.json",
                 "data/enrollment_policies.sqlite3",
                 "data/public_schools.sqlite3",
                 "reports/validation_report.json",
                 "reports/completion_summary_2026-07-16.md",
+                "reports/extraction_packet_index_2026-07-17.csv",
+                "reports/consulting_scenario_coverage_2026-07-17.csv",
+                "knowledge_base/extraction_packets/catchment_scope/{city_code}/",
             ],
             "nullSemantics": "NULL 或空字段表示尚无可靠公开证据，不表示不存在该项事实。",
             "cities": summaries,
@@ -376,12 +643,16 @@ def main() -> None:
         expected_files = set()
         for city in cities:
             expected_files.add(f"{city['code']}.json")
+            retrieval_packets = export_retrieval_packets(source_root, city["code"])
             payload = city_payload(
                 policy_db,
                 school_db,
                 city,
                 next(item["metrics"] for item in summaries if item["code"] == city["code"]),
                 exported_at,
+                retrieval_packets,
+                extraction_index.get(city["code"], {}),
+                scenario_index.get(city["code"], []),
             )
             write_json(city_root / f"{city['code']}.json", payload)
         for stale in city_root.glob("*.json"):
@@ -394,6 +665,9 @@ def main() -> None:
             {
                 "cities": len(cities),
                 "release": summary["release"],
+                "content_version": summary["contentVersion"],
+                "catchments": summary["metrics"]["catchments"],
+                "retrieval_packets": summary["metrics"]["retrievalPackets"],
                 "city_payload_bytes": total_bytes,
                 "summary": str(site_root / "app" / "generated" / "education-summary.json"),
             },
